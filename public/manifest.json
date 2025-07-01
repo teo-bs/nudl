@@ -6,7 +6,8 @@
   "description": "Save and organize LinkedIn posts with AI-powered tagging",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://www.linkedin.com/*",

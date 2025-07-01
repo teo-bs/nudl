@@ -1,7 +1,7 @@
+
 // LinkedIn Post Saver Content Script
 (() => {
   let isExtensionActive = true;
-  let currentUser = null;
 
   // Initialize the extension
   init();
@@ -9,30 +9,11 @@
   async function init() {
     console.log('LinkedIn Post Saver: Content script loaded');
     
-    // Check if user is authenticated
-    await checkAuth();
-    
-    if (!currentUser) {
-      console.log('LinkedIn Post Saver: User not authenticated, skipping initialization');
-      return;
-    }
-
     // Add save buttons to existing posts
     addSaveButtonsToExistingPosts();
     
     // Watch for new posts being loaded
     observeNewPosts();
-  }
-
-  async function checkAuth() {
-    try {
-      // This would normally check with your backend
-      // For now, we'll simulate authentication
-      const authData = await chrome.storage.local.get(['user']);
-      currentUser = authData.user || null;
-    } catch (error) {
-      console.error('Error checking auth:', error);
-    }
   }
 
   function createSaveButton() {
@@ -197,31 +178,24 @@
   }
 
   async function savePost(postData) {
-    // In a real implementation, this would send the data to your backend
-    // For now, we'll store it locally and show in the popup
-    
-    const existingPosts = await chrome.storage.local.get(['savedPosts']);
-    const savedPosts = existingPosts.savedPosts || [];
-    
-    const newPost = {
-      id: Date.now().toString(),
-      ...postData,
-      saved_at: new Date().toISOString(),
-      is_favorite: false,
-      read_status: false,
-    };
-    
-    savedPosts.unshift(newPost);
-    
-    // Keep only the last 100 posts to avoid storage issues
-    if (savedPosts.length > 100) {
-      savedPosts.splice(100);
-    }
-    
-    await chrome.storage.local.set({ savedPosts });
-    
-    // TODO: Send to backend API
-    // await sendToBackend(newPost);
+    // Send message to background script to handle saving
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(
+        { action: 'savePost', postData },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          
+          if (response && response.success) {
+            resolve(response.post);
+          } else {
+            reject(new Error(response?.error || 'Failed to save post'));
+          }
+        }
+      );
+    });
   }
 
   function showNotification(message, type = 'info') {
