@@ -2,18 +2,42 @@
 // LinkedIn Post Saver Content Script
 (() => {
   let isExtensionActive = true;
+  let isInitialized = false;
 
-  // Initialize the extension
+  // Initialize the extension with retry logic
   init();
 
   async function init() {
+    if (isInitialized) return;
+    
     console.log('LinkedIn Post Saver: Content script loaded');
     
-    // Add save buttons to existing posts
-    addSaveButtonsToExistingPosts();
-    
-    // Watch for new posts being loaded
-    observeNewPosts();
+    // Wait for page to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeExtension);
+    } else {
+      initializeExtension();
+    }
+  }
+
+  function initializeExtension() {
+    try {
+      // Add save buttons to existing posts
+      addSaveButtonsToExistingPosts();
+      
+      // Watch for new posts being loaded
+      observeNewPosts();
+      
+      isInitialized = true;
+      console.log('LinkedIn Post Saver: Extension initialized successfully');
+    } catch (error) {
+      console.error('LinkedIn Post Saver: Initialization error:', error);
+      // Retry after a short delay
+      setTimeout(() => {
+        isInitialized = false;
+        init();
+      }, 2000);
+    }
   }
 
   function createSaveButton() {
@@ -31,29 +55,51 @@
   }
 
   function addSaveButtonsToExistingPosts() {
-    // Find all LinkedIn post containers
-    const posts = document.querySelectorAll('[data-urn*="urn:li:activity:"], .feed-shared-update-v2');
-    
-    posts.forEach(post => {
-      if (!post.querySelector('.linkedin-post-saver-btn')) {
-        addSaveButtonToPost(post);
-      }
-    });
+    try {
+      // Find all LinkedIn post containers with more specific selectors
+      const posts = document.querySelectorAll([
+        '[data-urn*="urn:li:activity:"]',
+        '.feed-shared-update-v2',
+        '.feed-shared-update-v2__content',
+        'article[data-urn]'
+      ].join(', '));
+      
+      console.log(`LinkedIn Post Saver: Found ${posts.length} posts`);
+      
+      posts.forEach(post => {
+        if (!post.querySelector('.linkedin-post-saver-btn')) {
+          addSaveButtonToPost(post);
+        }
+      });
+    } catch (error) {
+      console.error('LinkedIn Post Saver: Error adding save buttons:', error);
+    }
   }
 
   function addSaveButtonToPost(postElement) {
-    const saveButton = createSaveButton();
-    
-    // Find the best place to insert the button
-    const actionsBar = postElement.querySelector('.feed-shared-social-action-bar, .social-actions-bar');
-    
-    if (actionsBar) {
-      const buttonContainer = document.createElement('div');
-      buttonContainer.className = 'linkedin-post-saver-container';
-      buttonContainer.appendChild(saveButton);
+    try {
+      const saveButton = createSaveButton();
       
-      // Insert at the beginning of the actions bar
-      actionsBar.insertBefore(buttonContainer, actionsBar.firstChild);
+      // Find the best place to insert the button with multiple fallback options
+      const actionsBar = postElement.querySelector([
+        '.feed-shared-social-action-bar',
+        '.social-actions-bar',
+        '.feed-shared-social-counts-bar',
+        '.feed-shared-footer'
+      ].join(', '));
+      
+      if (actionsBar) {
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'linkedin-post-saver-container';
+        buttonContainer.appendChild(saveButton);
+        
+        // Insert at the beginning of the actions bar
+        actionsBar.insertBefore(buttonContainer, actionsBar.firstChild);
+      } else {
+        console.log('LinkedIn Post Saver: Could not find actions bar for post');
+      }
+    } catch (error) {
+      console.error('LinkedIn Post Saver: Error adding button to post:', error);
     }
   }
 
@@ -62,7 +108,7 @@
     event.stopPropagation();
     
     const button = event.currentTarget;
-    const postElement = button.closest('[data-urn*="urn:li:activity:"], .feed-shared-update-v2');
+    const postElement = button.closest('[data-urn*="urn:li:activity:"], .feed-shared-update-v2, article[data-urn]');
     
     if (!postElement) {
       showNotification('Error: Could not find post content', 'error');
@@ -72,7 +118,7 @@
     // Extract post data
     const postData = extractPostData(postElement);
     
-    if (!postData) {
+    if (!postData || !postData.content) {
       showNotification('Error: Could not extract post data', 'error');
       return;
     }
@@ -141,28 +187,50 @@
 
   function extractPostData(postElement) {
     try {
-      // Extract author information
-      const authorElement = postElement.querySelector('.feed-shared-actor__name, .update-components-actor__name');
+      // Extract author information with multiple selector fallbacks
+      const authorElement = postElement.querySelector([
+        '.feed-shared-actor__name',
+        '.update-components-actor__name',
+        '.feed-shared-actor__title',
+        '.feed-shared-actor .visually-hidden'
+      ].join(', '));
       const authorName = authorElement?.textContent?.trim() || 'Unknown Author';
       
-      const authorImageElement = postElement.querySelector('.feed-shared-actor__avatar img, .presence-entity__image');
+      const authorImageElement = postElement.querySelector([
+        '.feed-shared-actor__avatar img',
+        '.presence-entity__image',
+        '.feed-shared-actor img'
+      ].join(', '));
       const authorAvatar = authorImageElement?.src || '';
       
-      // Extract post content
-      const contentElement = postElement.querySelector('.feed-shared-text, .update-components-text');
+      // Extract post content with multiple selector fallbacks
+      const contentElement = postElement.querySelector([
+        '.feed-shared-text',
+        '.update-components-text',
+        '.feed-shared-update-v2__description',
+        '[data-test-id="main-feed-activity-card"] .break-words'
+      ].join(', '));
       const content = contentElement?.textContent?.trim() || '';
       
       // Extract post URL (try to get permalink)
-      const postUrl = window.location.href;
+      const postUrl = window.location.href.split('?')[0] + '?utm_source=linkedin_post_saver';
       
       // Extract post ID from data attributes
-      const postId = postElement.getAttribute('data-urn') || '';
+      const postId = postElement.getAttribute('data-urn') || 
+                   postElement.getAttribute('data-id') || 
+                   Date.now().toString();
       
       // Extract timestamp if available
-      const timeElement = postElement.querySelector('time, .feed-shared-actor__sub-description');
-      const timestamp = timeElement?.getAttribute('datetime') || new Date().toISOString();
+      const timeElement = postElement.querySelector([
+        'time',
+        '.feed-shared-actor__sub-description time',
+        '.feed-shared-actor__sub-description'
+      ].join(', '));
+      const timestamp = timeElement?.getAttribute('datetime') || 
+                       timeElement?.textContent?.trim() || 
+                       new Date().toISOString();
 
-      return {
+      const result = {
         content,
         author_name: authorName,
         author_avatar_url: authorAvatar,
@@ -171,6 +239,9 @@
         post_date: timestamp,
         title: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
       };
+
+      console.log('LinkedIn Post Saver: Extracted post data:', result);
+      return result;
     } catch (error) {
       console.error('Error extracting post data:', error);
       return null;
@@ -178,8 +249,12 @@
   }
 
   async function savePost(postData) {
-    // Send message to background script to handle saving
     return new Promise((resolve, reject) => {
+      if (!chrome.runtime || !chrome.runtime.sendMessage) {
+        reject(new Error('Chrome runtime not available'));
+        return;
+      }
+
       chrome.runtime.sendMessage(
         { action: 'savePost', postData },
         (response) => {
@@ -225,16 +300,16 @@
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === 1) { // Element node
             // Check if the added node is a post
-            if (node.matches && node.matches('[data-urn*="urn:li:activity:"], .feed-shared-update-v2')) {
-              addSaveButtonToPost(node);
+            if (node.matches && node.matches('[data-urn*="urn:li:activity:"], .feed-shared-update-v2, article[data-urn]')) {
+              setTimeout(() => addSaveButtonToPost(node), 100);
             }
             
             // Check if the added node contains posts
-            const posts = node.querySelectorAll && node.querySelectorAll('[data-urn*="urn:li:activity:"], .feed-shared-update-v2');
-            if (posts) {
+            const posts = node.querySelectorAll && node.querySelectorAll('[data-urn*="urn:li:activity:"], .feed-shared-update-v2, article[data-urn]');
+            if (posts && posts.length > 0) {
               posts.forEach(post => {
                 if (!post.querySelector('.linkedin-post-saver-btn')) {
-                  addSaveButtonToPost(post);
+                  setTimeout(() => addSaveButtonToPost(post), 100);
                 }
               });
             }

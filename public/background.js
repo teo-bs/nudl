@@ -1,3 +1,4 @@
+
 // Background script for LinkedIn Post Saver
 chrome.runtime.onInstalled.addListener(() => {
     console.log('LinkedIn Post Saver extension installed');
@@ -103,25 +104,30 @@ async function handleSyncWithBackend(sendResponse) {
 }
 
 // Periodic sync with backend (every 30 minutes)
-chrome.alarms.create('syncPosts', { periodInMinutes: 30 });
+// Only create alarm if chrome.alarms is available
+if (chrome.alarms) {
+    chrome.alarms.create('syncPosts', { periodInMinutes: 30 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === 'syncPosts') {
-        // Implement periodic sync logic here
-        console.log('Periodic sync triggered');
-    }
-});
+    chrome.alarms.onAlarm.addListener((alarm) => {
+        if (alarm.name === 'syncPosts') {
+            // Implement periodic sync logic here
+            console.log('Periodic sync triggered');
+        }
+    });
+}
 
 // Handle tab updates to inject content script if needed
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete' && tab.url && tab.url.includes('linkedin.com')) {
-        // Ensure content script is loaded
-        chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            files: ['content-script.js']
-        }).catch(err => {
-            // Content script might already be loaded, ignore errors
-            console.log('Content script injection skipped:', err.message);
-        });
+        // Ensure content script is loaded with proper error handling
+        if (chrome.scripting && chrome.scripting.executeScript) {
+            chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['content-script.js']
+            }).catch(err => {
+                // Content script might already be loaded or tab might not be ready
+                console.log('Content script injection skipped:', err.message);
+            });
+        }
     }
 });
