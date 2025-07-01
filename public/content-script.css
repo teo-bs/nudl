@@ -1,0 +1,123 @@
+
+/* LinkedIn Post Saver Styles */
+.linkedin-post-saver-container {
+  display: inline-flex;
+  margin-right: 8px;
+}
+
+.linkedin-post-saver-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e1e5e9;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  position: relative;
+}
+
+.linkedin-post-saver-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #0a66c2;
+  color: #0a66c2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.linkedin-post-saver-btn:active {
+  transform: translateY(0);
+}
+
+.linkedin-post-saver-btn.saved {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.linkedin-post-saver-btn.saved:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+.linkedin-post-saver-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.linkedin-post-saver-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #0a66c2;
+  border-radius: 50%;
+  animation: linkedin-post-saver-spin 1s linear infinite;
+}
+
+@keyframes linkedin-post-saver-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Notification styles */
+.linkedin-post-saver-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  z-index: 10000;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.linkedin-post-saver-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.linkedin-post-saver-notification.success {
+  background: #10b981;
+  color: white;
+}
+
+.linkedin-post-saver-notification.error {
+  background: #ef4444;
+  color: white;
+}
+
+.linkedin-post-saver-notification.info {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Make sure our buttons don't interfere with LinkedIn's layout */
+.feed-shared-social-action-bar .linkedin-post-saver-container {
+  order: -1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .linkedin-post-saver-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  
+  .linkedin-post-saver-notification {
+    right: 10px;
+    top: 10px;
+    max-width: calc(100vw - 20px);
+  }
+}
