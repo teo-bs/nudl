@@ -4,47 +4,74 @@ export class ExtensionInitializer {
   constructor() {
     this.isInitialized = false;
     this.isExtensionActive = true;
+    this.initAttempts = 0;
+    this.maxInitAttempts = 5;
   }
 
   async init() {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      console.log('ExtensionInitializer: Already initialized');
+      return;
+    }
     
-    console.log('LinkedIn Post Saver: Content script loaded');
+    this.initAttempts++;
+    console.log(`ExtensionInitializer: Initialization attempt ${this.initAttempts}/${this.maxInitAttempts}`);
     
     // Wait for page to be ready
     if (document.readyState === 'loading') {
+      console.log('ExtensionInitializer: Waiting for DOM to load...');
       document.addEventListener('DOMContentLoaded', () => this.initializeExtension());
     } else {
+      console.log('ExtensionInitializer: DOM already loaded, initializing...');
       this.initializeExtension();
     }
   }
 
   initializeExtension() {
     try {
+      console.log('ExtensionInitializer: Starting extension initialization');
+      
       // Import and initialize other modules
       import('./post-detector.js').then(({ PostDetector }) => {
+        console.log('ExtensionInitializer: PostDetector module loaded');
         const postDetector = new PostDetector();
         postDetector.initialize();
+        this.isInitialized = true;
+        console.log('ExtensionInitializer: Extension initialized successfully');
+      }).catch(error => {
+        console.error('ExtensionInitializer: Failed to load PostDetector:', error);
+        this.handleInitializationError(error);
       });
       
-      this.isInitialized = true;
-      console.log('LinkedIn Post Saver: Extension initialized successfully');
     } catch (error) {
-      console.error('LinkedIn Post Saver: Initialization error:', error);
-      // Retry after a short delay
+      console.error('ExtensionInitializer: Initialization error:', error);
+      this.handleInitializationError(error);
+    }
+  }
+
+  handleInitializationError(error) {
+    if (this.initAttempts < this.maxInitAttempts) {
+      console.log(`ExtensionInitializer: Retrying initialization in 2 seconds... (${this.initAttempts}/${this.maxInitAttempts})`);
       setTimeout(() => {
         this.isInitialized = false;
         this.init();
       }, 2000);
+    } else {
+      console.error('ExtensionInitializer: Max initialization attempts reached. Extension failed to load.');
     }
   }
 
   toggleExtension() {
     this.isExtensionActive = !this.isExtensionActive;
+    console.log('ExtensionInitializer: Extension toggled, active:', this.isExtensionActive);
+    
     const buttons = document.querySelectorAll('.linkedin-post-saver-btn');
+    console.log('ExtensionInitializer: Found', buttons.length, 'buttons to toggle');
+    
     buttons.forEach(btn => {
       btn.style.display = this.isExtensionActive ? 'flex' : 'none';
     });
+    
     return this.isExtensionActive;
   }
 }
