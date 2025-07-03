@@ -123,7 +123,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (chrome.scripting && chrome.scripting.executeScript) {
             chrome.scripting.executeScript({
                 target: { tabId: tabId },
-                files: ['content-script.js']
+                files: ['linkedin-post-saver.js']
             }).catch(err => {
                 // Content script might already be loaded or tab might not be ready
                 console.log('Content script injection skipped:', err.message);

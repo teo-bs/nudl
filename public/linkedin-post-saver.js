@@ -240,6 +240,8 @@
         '.feed-shared-update-v2[data-urn]'
       ];
       this.buttonManager = new ButtonManager();
+      this.processedPosts = new Set();
+      this.observerTimeout = null;
       console.log('PostDetector initialized with selectors:', this.postSelectors);
     }
 
@@ -253,26 +255,30 @@
       try {
         console.log('PostDetector: Looking for existing posts...');
         
-        // Try each selector individually to see which ones work
-        this.postSelectors.forEach(selector => {
-          const posts = document.querySelectorAll(selector);
-          console.log(`PostDetector: Selector "${selector}" found ${posts.length} posts`);
-        });
-        
         const allPosts = document.querySelectorAll(this.postSelectors.join(', '));
         console.log(`PostDetector: Total posts found: ${allPosts.length}`);
         
         allPosts.forEach((post, index) => {
-          console.log(`PostDetector: Processing post ${index + 1}`, post);
-          if (!post.querySelector('.linkedin-post-saver-btn')) {
+          const postId = this.getPostId(post);
+          if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
+            console.log(`PostDetector: Processing new post ${index + 1}`, post);
             this.addSaveButtonToPost(post);
+            this.processedPosts.add(postId);
           } else {
-            console.log(`PostDetector: Post ${index + 1} already has save button`);
+            console.log(`PostDetector: Post ${index + 1} already processed or has button`);
           }
         });
       } catch (error) {
         console.error('PostDetector: Error adding save buttons:', error);
       }
+    }
+
+    getPostId(postElement) {
+      return postElement.getAttribute('data-urn') || 
+             postElement.getAttribute('data-id') || 
+             postElement.getAttribute('data-activity-urn') ||
+             postElement.querySelector('[data-urn]')?.getAttribute('data-urn') ||
+             null;
     }
 
     addSaveButtonToPost(postElement) {
@@ -327,30 +333,14 @@
       console.log('PostDetector: Starting post observation');
       
       const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === 1) {
-              // Check if the node itself is a post
-              if (node.matches && node.matches(this.postSelectors.join(', '))) {
-                console.log('PostDetector: New post detected (direct match)', node);
-                setTimeout(() => this.addSaveButtonToPost(node), 100);
-              }
-              
-              // Check for posts within the added node
-              if (node.querySelectorAll) {
-                const posts = node.querySelectorAll(this.postSelectors.join(', '));
-                if (posts && posts.length > 0) {
-                  console.log(`PostDetector: Found ${posts.length} new posts in added content`);
-                  posts.forEach(post => {
-                    if (!post.querySelector('.linkedin-post-saver-btn')) {
-                      setTimeout(() => this.addSaveButtonToPost(post), 100);
-                    }
-                  });
-                }
-              }
-            }
-          });
-        });
+        // Clear existing timeout to debounce rapid mutations
+        if (this.observerTimeout) {
+          clearTimeout(this.observerTimeout);
+        }
+        
+        this.observerTimeout = setTimeout(() => {
+          this.processNewPosts(mutations);
+        }, 300);
       });
 
       observer.observe(document.body, {
@@ -359,6 +349,40 @@
       });
       
       console.log('PostDetector: Observer started');
+    }
+
+    processNewPosts(mutations) {
+      const newPosts = [];
+      
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) {
+            // Check if the node itself is a post
+            if (node.matches && node.matches(this.postSelectors.join(', '))) {
+              newPosts.push(node);
+            }
+            
+            // Check for posts within the added node
+            if (node.querySelectorAll) {
+              const posts = node.querySelectorAll(this.postSelectors.join(', '));
+              posts.forEach(post => newPosts.push(post));
+            }
+          }
+        });
+      });
+
+      // Process unique posts only
+      const uniquePosts = Array.from(new Set(newPosts));
+      console.log(`PostDetector: Processing ${uniquePosts.length} unique new posts`);
+      
+      uniquePosts.forEach(post => {
+        const postId = this.getPostId(post);
+        if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
+          console.log('PostDetector: Adding button to new post', post);
+          this.addSaveButtonToPost(post);
+          this.processedPosts.add(postId);
+        }
+      });
     }
   }
 
