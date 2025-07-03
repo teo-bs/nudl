@@ -19,6 +19,10 @@
       "matches": ["https://www.linkedin.com/*"],
       "js": ["linkedin-post-saver.js"],
       "css": ["content-script.css"]
+    },
+    {
+      "matches": ["https://nudl.lovable.app/*", "https://*.lovable.app/*"],
+      "js": ["dashboard-content-script.js"]
     }
   ],
   "background": {

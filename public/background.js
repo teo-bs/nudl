@@ -97,6 +97,7 @@ async function syncPostWithBackend(postData) {
         const tabs = await chrome.tabs.query({});
         const webAppTab = tabs.find(tab => 
             tab.url && (
+                tab.url.includes('nudl.lovable.app') || 
                 tab.url.includes('lovable.app') || 
                 tab.url.includes('localhost') ||
                 tab.url.includes('127.0.0.1')
@@ -105,12 +106,26 @@ async function syncPostWithBackend(postData) {
         
         if (webAppTab) {
             // Send message to the main web app to save the post
-            chrome.tabs.sendMessage(webAppTab.id, {
-                action: 'savePostToDatabase',
-                postData
-            }).catch(err => {
-                console.log('Could not sync with web app:', err.message);
-            });
+            try {
+                const response = await chrome.tabs.sendMessage(webAppTab.id, {
+                    action: 'savePostToDatabase',
+                    postData
+                });
+                console.log('Sync response from web app:', response);
+            } catch (err) {
+                console.log('Could not sync with web app via content script, trying window message:', err.message);
+                // Fallback: try direct message to the window
+                await chrome.scripting.executeScript({
+                    target: { tabId: webAppTab.id },
+                    func: (data) => {
+                        window.postMessage({
+                            action: 'savePostToDatabase',
+                            postData: data
+                        }, '*');
+                    },
+                    args: [postData]
+                });
+            }
         } else {
             console.log('Web app tab not found for syncing');
         }

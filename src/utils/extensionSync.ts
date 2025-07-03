@@ -16,9 +16,25 @@ export function initializeExtensionSync() {
     window.addEventListener('message', async (event) => {
       if (event.data.action === 'savePostToDatabase') {
         try {
-          await savePostToDatabase(event.data.postData);
+          const result = await savePostToDatabase(event.data.postData);
+          // Send response back to extension
+          if (event.source) {
+            (event.source as any).postMessage({
+              action: 'savePostResponse',
+              success: true,
+              result: result
+            }, '*');
+          }
         } catch (error) {
           console.error('Error saving post from extension:', error);
+          // Send error response back to extension
+          if (event.source) {
+            (event.source as any).postMessage({
+              action: 'savePostResponse',
+              success: false,
+              error: (error as Error).message
+            }, '*');
+          }
         }
       } else if (event.data.action === 'getUserDetails') {
         try {
@@ -72,24 +88,29 @@ async function savePostToDatabase(postData: ExtensionPostData) {
   
   if (!user) {
     console.log('User not authenticated, cannot save post');
-    return;
+    throw new Error('User not authenticated');
   }
 
   // Check if post already exists
-  const { data: existingPost } = await supabase
+  const { data: existingPost, error: searchError } = await supabase
     .from('saved_posts')
     .select('id')
     .eq('user_id', user.id)
     .or(`post_url.eq.${postData.post_url},linkedin_post_id.eq.${postData.linkedin_post_id}`)
-    .single();
+    .maybeSingle();
+
+  if (searchError) {
+    console.error('Error checking for existing post:', searchError);
+    throw searchError;
+  }
 
   if (existingPost) {
     console.log('Post already exists in database');
-    return;
+    throw new Error('Post already saved');
   }
 
   // Save the post to Supabase
-  const { error } = await supabase
+  const { data: savedPost, error } = await supabase
     .from('saved_posts')
     .insert({
       user_id: user.id,
@@ -104,12 +125,15 @@ async function savePostToDatabase(postData: ExtensionPostData) {
       is_favorite: false,
       read_status: false,
       status: 'active'
-    });
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error('Error saving post to database:', error);
     throw error;
   }
 
-  console.log('Post saved successfully to database');
+  console.log('Post saved successfully to database:', savedPost);
+  return savedPost;
 }
