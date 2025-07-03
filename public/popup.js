@@ -30,6 +30,9 @@ function setupEventListeners() {
     
     // Refresh posts
     document.getElementById('refreshPosts').addEventListener('click', refreshPosts);
+    
+    // Login to dashboard
+    document.getElementById('loginButton')?.addEventListener('click', loginToDashboard);
 }
 
 async function loadRecentPosts() {
@@ -245,9 +248,34 @@ function updateUserUI() {
                 <div class="user-avatar">?</div>
                 <div class="user-details">
                     <div class="user-name">Not logged in</div>
-                    <div class="user-email">Please log in to the dashboard</div>
+                    <div class="user-email">Please log in to sync posts</div>
                 </div>
-                <div class="user-status offline">●</div>
+                <button class="login-btn" id="loginButton">Login to Dashboard</button>
+            </div>
+        `;
+        // Re-attach event listener after creating the button
+        setTimeout(() => {
+            document.getElementById('loginButton')?.addEventListener('click', loginToDashboard);
+        }, 100);
+    }
+}
+
+async function loginToDashboard() {
+    // Open the dashboard login page and focus on it
+    const dashboardUrl = 'https://nudl.lovable.app/auth';
+    const tab = await chrome.tabs.create({ url: dashboardUrl });
+    
+    // Show instructions to user
+    const userSection = document.getElementById('userSection');
+    if (userSection) {
+        userSection.innerHTML = `
+            <div class="user-info login-in-progress">
+                <div class="user-avatar">⏳</div>
+                <div class="user-details">
+                    <div class="user-name">Logging in...</div>
+                    <div class="user-email">Please complete login in the opened tab, then refresh this popup</div>
+                </div>
+                <button class="refresh-btn" onclick="loadUserDetails(); loadRecentPosts(); updateStats();">Refresh</button>
             </div>
         `;
     }

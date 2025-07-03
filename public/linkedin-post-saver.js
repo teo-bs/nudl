@@ -246,25 +246,43 @@
     }
 
     isPromotedPost(postElement) {
-      // Check for promoted post indicators
-      const promotedIndicators = [
-        '.feed-shared-actor__sub-description:contains("Promoted")',
-        '[data-test-id="sponsored-update-text"]',
-        '.update-components-actor__meta-link:contains("Promoted")',
-        '.feed-shared-actor__description:contains("Promoted")'
-      ];
-      
-      // Check for text content indicating promotion
-      const textElements = postElement.querySelectorAll([
+      // Check for promoted post indicators with improved detection
+      const promotedSelectors = [
         '.feed-shared-actor__sub-description',
         '.feed-shared-actor__description',
         '.update-components-actor__meta-link',
-        '[data-test-id="sponsored-update-text"]'
-      ].join(', '));
+        '[data-test-id="sponsored-update-text"]',
+        '.feed-shared-text__text-view',
+        '.feed-shared-actor__name',
+        '.feed-shared-actor__content'
+      ];
+      
+      // Check for text content indicating promotion
+      const textElements = postElement.querySelectorAll(promotedSelectors.join(', '));
       
       for (const element of textElements) {
-        if (element && element.textContent && element.textContent.toLowerCase().includes('promoted')) {
-          console.log('PostDetector: Found promoted post, skipping save button');
+        if (element && element.textContent) {
+          const text = element.textContent.toLowerCase().trim();
+          if (text.includes('promoted') || text.includes('sponsored')) {
+            console.log('PostDetector: Found promoted/sponsored post, skipping save button');
+            return true;
+          }
+        }
+      }
+      
+      // Also check for promoted badge or icon indicators
+      const promotedBadges = postElement.querySelectorAll([
+        '[aria-label*="Promoted"]',
+        '[aria-label*="Sponsored"]',
+        '.artdeco-entity-lockup__badge',
+        '.feed-shared-actor__description [data-test-id]'
+      ].join(', '));
+      
+      for (const badge of promotedBadges) {
+        if (badge && (badge.textContent?.toLowerCase().includes('promoted') || 
+                     badge.getAttribute('aria-label')?.toLowerCase().includes('promoted') ||
+                     badge.getAttribute('aria-label')?.toLowerCase().includes('sponsored'))) {
+          console.log('PostDetector: Found promoted badge, skipping save button');
           return true;
         }
       }
