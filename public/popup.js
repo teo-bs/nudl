@@ -147,8 +147,8 @@ async function checkExtensionStatus() {
 }
 
 function openDashboard() {
-    // Open the actual dashboard URL
-    const dashboardUrl = 'https://nudl.lovable.app/dashboard';
+    // Open the actual dashboard URL (root page)
+    const dashboardUrl = 'https://nudl.lovable.app/';
     chrome.tabs.create({ url: dashboardUrl });
 }
 
@@ -199,7 +199,7 @@ async function loadUserDetails() {
         // First try to get from nudl.lovable.app tabs
         const tabs = await chrome.tabs.query({});
         const webAppTab = tabs.find(tab => 
-            tab.url && tab.url.includes('nudl.lovable.app')
+            tab.url && (tab.url.includes('nudl.lovable.app') || tab.url.includes('lovable.app'))
         );
         
         if (webAppTab) {

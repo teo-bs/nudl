@@ -13,46 +13,44 @@ interface ExtensionPostData {
 export function initializeExtensionSync() {
   // Listen for messages from the Chrome extension
   if (typeof window !== 'undefined') {
+    console.log('Extension sync initialized - listening for messages');
+    
     window.addEventListener('message', async (event) => {
+      console.log('Extension sync received message:', event.data);
+      
       if (event.data.action === 'savePostToDatabase') {
         try {
           const result = await savePostToDatabase(event.data.postData);
+          console.log('Post saved successfully:', result);
           // Send response back to extension
-          if (event.source) {
-            (event.source as any).postMessage({
-              action: 'savePostResponse',
-              success: true,
-              result: result
-            }, '*');
-          }
+          window.postMessage({
+            action: 'savePostResponse',
+            success: true,
+            result: result
+          }, '*');
         } catch (error) {
           console.error('Error saving post from extension:', error);
           // Send error response back to extension
-          if (event.source) {
-            (event.source as any).postMessage({
-              action: 'savePostResponse',
-              success: false,
-              error: (error as Error).message
-            }, '*');
-          }
+          window.postMessage({
+            action: 'savePostResponse',
+            success: false,
+            error: (error as Error).message
+          }, '*');
         }
       } else if (event.data.action === 'getUserDetails') {
         try {
           const { data: { user } } = await supabase.auth.getUser();
-          if (event.source) {
-            (event.source as any).postMessage({ 
-              action: 'getUserDetailsResponse', 
-              user: user 
-            }, '*');
-          }
+          console.log('Sending user details to extension:', user);
+          window.postMessage({ 
+            action: 'getUserDetailsResponse', 
+            user: user 
+          }, '*');
         } catch (error) {
           console.error('Error getting user details:', error);
-          if (event.source) {
-            (event.source as any).postMessage({ 
-              action: 'getUserDetailsResponse', 
-              user: null 
-            }, '*');
-          }
+          window.postMessage({ 
+            action: 'getUserDetailsResponse', 
+            user: null 
+          }, '*');
         }
       }
     });

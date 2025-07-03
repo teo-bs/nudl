@@ -246,43 +246,57 @@
     }
 
     isPromotedPost(postElement) {
-      // Check for promoted post indicators with improved detection
+      // More comprehensive promoted post detection
       const promotedSelectors = [
         '.feed-shared-actor__sub-description',
-        '.feed-shared-actor__description',
+        '.feed-shared-actor__description', 
         '.update-components-actor__meta-link',
         '[data-test-id="sponsored-update-text"]',
         '.feed-shared-text__text-view',
         '.feed-shared-actor__name',
-        '.feed-shared-actor__content'
+        '.feed-shared-actor__content',
+        '.feed-shared-actor__meta',
+        '.feed-shared-text',
+        '.social-details-social-activity'
       ];
       
-      // Check for text content indicating promotion
-      const textElements = postElement.querySelectorAll(promotedSelectors.join(', '));
+      // Check all text content in the post
+      const allText = postElement.textContent?.toLowerCase() || '';
+      if (allText.includes('promoted') || allText.includes('sponsored') || allText.includes('•promoted')) {
+        console.log('PostDetector: Found promoted/sponsored text in post content, skipping save button');
+        return true;
+      }
       
+      // Check specific selectors for promotion indicators  
+      const textElements = postElement.querySelectorAll(promotedSelectors.join(', '));
       for (const element of textElements) {
         if (element && element.textContent) {
           const text = element.textContent.toLowerCase().trim();
-          if (text.includes('promoted') || text.includes('sponsored')) {
-            console.log('PostDetector: Found promoted/sponsored post, skipping save button');
+          if (text.includes('promoted') || text.includes('sponsored') || text === 'promoted') {
+            console.log('PostDetector: Found promoted/sponsored in selector, skipping save button');
             return true;
           }
         }
       }
       
-      // Also check for promoted badge or icon indicators
+      // Check for promoted badges and aria labels
       const promotedBadges = postElement.querySelectorAll([
         '[aria-label*="Promoted"]',
-        '[aria-label*="Sponsored"]',
+        '[aria-label*="Sponsored"]', 
+        '[aria-label*="promoted"]',
+        '[aria-label*="sponsored"]',
         '.artdeco-entity-lockup__badge',
-        '.feed-shared-actor__description [data-test-id]'
+        '.feed-shared-actor__description [data-test-id]',
+        '[data-test-id*="sponsored"]',
+        '[data-test-id*="promoted"]'
       ].join(', '));
       
       for (const badge of promotedBadges) {
-        if (badge && (badge.textContent?.toLowerCase().includes('promoted') || 
-                     badge.getAttribute('aria-label')?.toLowerCase().includes('promoted') ||
-                     badge.getAttribute('aria-label')?.toLowerCase().includes('sponsored'))) {
-          console.log('PostDetector: Found promoted badge, skipping save button');
+        const ariaLabel = badge.getAttribute('aria-label')?.toLowerCase() || '';
+        const textContent = badge.textContent?.toLowerCase() || '';
+        if (ariaLabel.includes('promoted') || ariaLabel.includes('sponsored') || 
+            textContent.includes('promoted') || textContent.includes('sponsored')) {
+          console.log('PostDetector: Found promoted badge/aria-label, skipping save button');
           return true;
         }
       }
