@@ -55,8 +55,8 @@ export const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">Manage your saved LinkedIn posts and tags</p>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Manage your saved LinkedIn posts and tags</p>
         </div>
         <Button onClick={() => setIsAddPostModalOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />

@@ -22,19 +22,19 @@ const Auth = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-secondary to-accent/50 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            LinkedIn Post Saver
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            nudl
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Save and organize your favorite LinkedIn posts with AI-powered tagging
           </p>
         </div>
