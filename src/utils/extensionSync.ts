@@ -1,0 +1,88 @@
+import { supabase } from '@/integrations/supabase/client';
+
+interface ExtensionPostData {
+  content: string;
+  author_name: string;
+  author_avatar_url: string;
+  post_url: string;
+  linkedin_post_id: string;
+  post_date: string;
+  title: string;
+}
+
+export function initializeExtensionSync() {
+  // Listen for messages from the Chrome extension
+  if (typeof window !== 'undefined') {
+    window.addEventListener('message', async (event) => {
+      if (event.data.action === 'savePostToDatabase') {
+        try {
+          await savePostToDatabase(event.data.postData);
+        } catch (error) {
+          console.error('Error saving post from extension:', error);
+        }
+      }
+    });
+
+    // Also listen for chrome extension messages if available
+    if ((window as any).chrome && (window as any).chrome.runtime) {
+      (window as any).chrome.runtime.onMessage?.addListener(async (message: any, sender: any, sendResponse: any) => {
+        if (message.action === 'savePostToDatabase') {
+          try {
+            await savePostToDatabase(message.postData);
+            sendResponse({ success: true });
+          } catch (error) {
+            console.error('Error saving post from extension:', error);
+            sendResponse({ success: false, error: (error as Error).message });
+          }
+        }
+      });
+    }
+  }
+}
+
+async function savePostToDatabase(postData: ExtensionPostData) {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.log('User not authenticated, cannot save post');
+    return;
+  }
+
+  // Check if post already exists
+  const { data: existingPost } = await supabase
+    .from('saved_posts')
+    .select('id')
+    .eq('user_id', user.id)
+    .or(`post_url.eq.${postData.post_url},linkedin_post_id.eq.${postData.linkedin_post_id}`)
+    .single();
+
+  if (existingPost) {
+    console.log('Post already exists in database');
+    return;
+  }
+
+  // Save the post to Supabase
+  const { error } = await supabase
+    .from('saved_posts')
+    .insert({
+      user_id: user.id,
+      content: postData.content,
+      title: postData.title,
+      author_name: postData.author_name,
+      author_avatar_url: postData.author_avatar_url,
+      post_url: postData.post_url,
+      linkedin_post_id: postData.linkedin_post_id,
+      post_date: postData.post_date,
+      saved_at: new Date().toISOString(),
+      is_favorite: false,
+      read_status: false,
+      status: 'active'
+    });
+
+  if (error) {
+    console.error('Error saving post to database:', error);
+    throw error;
+  }
+
+  console.log('Post saved successfully to database');
+}

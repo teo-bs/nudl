@@ -71,8 +71,7 @@ async function handleSavePost(postData, sendResponse) {
         await chrome.storage.local.set({ savedPosts });
         
         // Try to sync with backend (if user is authenticated)
-        // This is where you'd implement the actual API call
-        // await syncPostWithBackend(newPost);
+        await syncPostWithBackend(newPost);
         
         sendResponse({ success: true, post: newPost });
         
@@ -92,10 +91,44 @@ async function handleGetSavedPosts(sendResponse) {
     }
 }
 
+async function syncPostWithBackend(postData) {
+    try {
+        // Try to find the web app tab
+        const tabs = await chrome.tabs.query({});
+        const webAppTab = tabs.find(tab => 
+            tab.url && (
+                tab.url.includes('lovable.app') || 
+                tab.url.includes('localhost') ||
+                tab.url.includes('127.0.0.1')
+            )
+        );
+        
+        if (webAppTab) {
+            // Send message to the main web app to save the post
+            chrome.tabs.sendMessage(webAppTab.id, {
+                action: 'savePostToDatabase',
+                postData
+            }).catch(err => {
+                console.log('Could not sync with web app:', err.message);
+            });
+        } else {
+            console.log('Web app tab not found for syncing');
+        }
+    } catch (error) {
+        console.error('Error syncing with backend:', error);
+    }
+}
+
 async function handleSyncWithBackend(sendResponse) {
     try {
-        // This is where you'd implement syncing with your backend
-        // For now, we'll just return a success response
+        // Get all saved posts and sync them
+        const result = await chrome.storage.local.get(['savedPosts']);
+        const savedPosts = result.savedPosts || [];
+        
+        for (const post of savedPosts) {
+            await syncPostWithBackend(post);
+        }
+        
         sendResponse({ success: true, message: 'Sync completed' });
     } catch (error) {
         console.error('Error syncing with backend:', error);

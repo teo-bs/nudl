@@ -245,6 +245,33 @@
       console.log('PostDetector initialized with selectors:', this.postSelectors);
     }
 
+    isPromotedPost(postElement) {
+      // Check for promoted post indicators
+      const promotedIndicators = [
+        '.feed-shared-actor__sub-description:contains("Promoted")',
+        '[data-test-id="sponsored-update-text"]',
+        '.update-components-actor__meta-link:contains("Promoted")',
+        '.feed-shared-actor__description:contains("Promoted")'
+      ];
+      
+      // Check for text content indicating promotion
+      const textElements = postElement.querySelectorAll([
+        '.feed-shared-actor__sub-description',
+        '.feed-shared-actor__description',
+        '.update-components-actor__meta-link',
+        '[data-test-id="sponsored-update-text"]'
+      ].join(', '));
+      
+      for (const element of textElements) {
+        if (element && element.textContent && element.textContent.toLowerCase().includes('promoted')) {
+          console.log('PostDetector: Found promoted post, skipping save button');
+          return true;
+        }
+      }
+      
+      return false;
+    }
+
     initialize() {
       console.log('PostDetector: Starting initialization');
       this.addSaveButtonsToExistingPosts();
@@ -265,7 +292,7 @@
             this.addSaveButtonToPost(post);
             this.processedPosts.add(postId);
           } else {
-            console.log(`PostDetector: Post ${index + 1} already processed or has button`);
+            console.log(`PostDetector: Post ${index + 1} already processed or has button or is promoted`);
           }
         });
       } catch (error) {
@@ -285,17 +312,21 @@
       try {
         console.log('PostDetector: Adding save button to post', postElement);
         
+        // Check if this is a promoted post
+        if (this.isPromotedPost(postElement)) {
+          console.log('PostDetector: Skipping promoted post');
+          return;
+        }
+        
         const saveButton = this.buttonManager.createSaveButton();
         
-        // Try multiple possible locations for the actions bar
+        // Try multiple possible locations for the actions bar in order of preference
         const actionSelectors = [
           '.feed-shared-social-action-bar',
-          '.social-actions-bar',
+          '.social-actions-bar', 
           '.feed-shared-footer',
           '.feed-shared-social-counts-bar',
-          '.social-counts-bar',
-          '.feed-shared-update-v2__description',
-          '.feed-shared-text'
+          '.social-counts-bar'
         ];
         
         let actionsBar = null;
@@ -310,19 +341,38 @@
         if (actionsBar) {
           const buttonContainer = document.createElement('div');
           buttonContainer.className = 'linkedin-post-saver-container';
+          buttonContainer.style.cssText = 'display: inline-flex; align-items: center; margin-right: 8px;';
           buttonContainer.appendChild(saveButton);
           
-          // Insert at the beginning of the actions bar
+          // Insert at the beginning of the actions bar for better alignment
           actionsBar.insertBefore(buttonContainer, actionsBar.firstChild);
-          console.log('PostDetector: Save button added successfully');
+          console.log('PostDetector: Save button added successfully to actions bar');
         } else {
-          // Fallback: add to the end of the post
-          console.log('PostDetector: No actions bar found, adding to post end');
-          const buttonContainer = document.createElement('div');
-          buttonContainer.className = 'linkedin-post-saver-container';
-          buttonContainer.style.cssText = 'margin: 10px 0; text-align: right;';
-          buttonContainer.appendChild(saveButton);
-          postElement.appendChild(buttonContainer);
+          // Fallback: add to a more reliable location within the post
+          console.log('PostDetector: No actions bar found, trying fallback locations');
+          
+          const fallbackSelectors = [
+            '.feed-shared-update-v2__description',
+            '.feed-shared-text',
+            '.feed-shared-update-v2'
+          ];
+          
+          let fallbackLocation = null;
+          for (const selector of fallbackSelectors) {
+            fallbackLocation = postElement.querySelector(selector);
+            if (fallbackLocation) break;
+          }
+          
+          if (fallbackLocation) {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'linkedin-post-saver-container';
+            buttonContainer.style.cssText = 'margin: 10px 0; text-align: right; border-top: 1px solid #e0e0e0; padding-top: 8px;';
+            buttonContainer.appendChild(saveButton);
+            fallbackLocation.parentNode.insertBefore(buttonContainer, fallbackLocation.nextSibling);
+            console.log('PostDetector: Save button added to fallback location');
+          } else {
+            console.log('PostDetector: No suitable location found for save button');
+          }
         }
       } catch (error) {
         console.error('PostDetector: Error adding button to post:', error);
@@ -377,7 +427,7 @@
       
       uniquePosts.forEach(post => {
         const postId = this.getPostId(post);
-        if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
+        if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn') && !this.isPromotedPost(post)) {
           console.log('PostDetector: Adding button to new post', post);
           this.addSaveButtonToPost(post);
           this.processedPosts.add(postId);

@@ -105,6 +105,22 @@
 /* Make sure our buttons don't interfere with LinkedIn's layout */
 .feed-shared-social-action-bar .linkedin-post-saver-container {
   order: -1;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-right: 12px !important;
+}
+
+.social-actions-bar .linkedin-post-saver-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-right: 12px !important;
+}
+
+/* Ensure proper alignment in action bars */
+.linkedin-post-saver-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
 }
 
 /* Responsive adjustments */
