@@ -176,10 +176,17 @@
         
       } catch (error) {
         console.error('Error saving post:', error);
-        this.updateButtonState(button, 'error');
-        this.notificationManager.show('Error saving post. Please try again.', 'error');
         
-        setTimeout(() => this.resetButton(button), 3000);
+        // Check if it's a duplicate post error
+        if (error.message && error.message.includes('already saved')) {
+          this.updateButtonState(button, 'saved');
+          this.notificationManager.show('Post already saved! ✓', 'info');
+          setTimeout(() => this.resetButton(button), 2000);
+        } else {
+          this.updateButtonState(button, 'error');
+          this.notificationManager.show('Error saving post. Please try again.', 'error');
+          setTimeout(() => this.resetButton(button), 3000);
+        }
       }
     }
 
@@ -232,17 +239,21 @@
     constructor() {
       this.postSelectors = [
         'div[data-id*="urn:li:activity:"]',
-        'div[data-urn*="urn:li:activity:"]',
+        'div[data-urn*="urn:li:activity:"]', 
         '.feed-shared-update-v2',
         'article[data-urn]',
         '.feed-shared-update-v2__content',
         '[data-test-id="main-feed-activity-card"]',
-        '.feed-shared-update-v2[data-urn]'
+        '.feed-shared-update-v2[data-urn]',
+        '.feed-shared-update-v2__description-wrapper',
+        '[data-urn*="urn:li:activity"]',
+        '.update-components-update-v2',
+        '.feed-shared-post'
       ];
       this.buttonManager = new ButtonManager();
       this.processedPosts = new Set();
       this.observerTimeout = null;
-      console.log('PostDetector initialized with selectors:', this.postSelectors);
+      console.log('PostDetector initialized with enhanced selectors:', this.postSelectors);
     }
 
     isPromotedPost(postElement) {
@@ -318,21 +329,30 @@
         console.log(`PostDetector: Total posts found: ${allPosts.length}`);
         
         allPosts.forEach((post, index) => {
-          const postId = this.getPostId(post);
-          if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
-            // Check if this post should be skipped
-            if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
-              console.log(`PostDetector: Skipping post ${index + 1} - promoted or job update`);
-              this.processedPosts.add(postId); // Mark as processed so we don't check again
-              return;
-            }
-            
-            console.log(`PostDetector: Processing new post ${index + 1}`, post);
-            this.addSaveButtonToPost(post);
-            this.processedPosts.add(postId);
-          } else {
-            console.log(`PostDetector: Post ${index + 1} already processed or has button`);
+          const postId = this.getPostId(post) || `fallback-${index}-${Date.now()}`;
+          
+          // Skip if already has button
+          if (post.querySelector('.linkedin-post-saver-btn')) {
+            console.log(`PostDetector: Post ${index + 1} already has button`);
+            return;
           }
+          
+          // Skip if already processed
+          if (this.processedPosts.has(postId)) {
+            console.log(`PostDetector: Post ${index + 1} already processed`);
+            return;
+          }
+          
+          // Check if this post should be skipped
+          if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
+            console.log(`PostDetector: Skipping post ${index + 1} - promoted or job update`);
+            this.processedPosts.add(postId);
+            return;
+          }
+          
+          console.log(`PostDetector: Processing new post ${index + 1}`, post);
+          this.addSaveButtonToPost(post);
+          this.processedPosts.add(postId);
         });
       } catch (error) {
         console.error('PostDetector: Error adding save buttons:', error);
@@ -340,11 +360,22 @@
     }
 
     getPostId(postElement) {
-      return postElement.getAttribute('data-urn') || 
-             postElement.getAttribute('data-id') || 
-             postElement.getAttribute('data-activity-urn') ||
-             postElement.querySelector('[data-urn]')?.getAttribute('data-urn') ||
-             null;
+      // Try multiple methods to get a unique ID
+      const urn = postElement.getAttribute('data-urn') || 
+                  postElement.getAttribute('data-id') || 
+                  postElement.getAttribute('data-activity-urn') ||
+                  postElement.querySelector('[data-urn]')?.getAttribute('data-urn');
+                  
+      if (urn) return urn;
+      
+      // Fallback: create ID from post content
+      const content = postElement.textContent?.trim();
+      if (content) {
+        return `content-${content.substring(0, 50).replace(/\s+/g, '-')}-${content.length}`;
+      }
+      
+      // Last resort: position-based ID
+      return `position-${Array.from(document.querySelectorAll(this.postSelectors.join(', '))).indexOf(postElement)}`;
     }
 
     addSaveButtonToPost(postElement) {
@@ -429,7 +460,9 @@
         
         this.observerTimeout = setTimeout(() => {
           this.processNewPosts(mutations);
-        }, 300);
+          // Also re-check existing posts periodically
+          this.addSaveButtonsToExistingPosts();
+        }, 500); // Increased timeout for better performance
       });
 
       observer.observe(document.body, {
@@ -465,19 +498,28 @@
       console.log(`PostDetector: Processing ${uniquePosts.length} unique new posts`);
       
       uniquePosts.forEach(post => {
-        const postId = this.getPostId(post);
-        if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
-          // Check if this post should be skipped
-          if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
-            console.log('PostDetector: Skipping new post - promoted or job update');
-            this.processedPosts.add(postId); // Mark as processed so we don't check again
-            return;
-          }
-          
-          console.log('PostDetector: Adding button to new post', post);
-          this.addSaveButtonToPost(post);
-          this.processedPosts.add(postId);
+        const postId = this.getPostId(post) || `new-${Date.now()}-${Math.random()}`;
+        
+        // Skip if already has button
+        if (post.querySelector('.linkedin-post-saver-btn')) {
+          return;
         }
+        
+        // Skip if already processed
+        if (this.processedPosts.has(postId)) {
+          return;
+        }
+        
+        // Check if this post should be skipped
+        if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
+          console.log('PostDetector: Skipping new post - promoted or job update');
+          this.processedPosts.add(postId);
+          return;
+        }
+        
+        console.log('PostDetector: Adding button to new post', post);
+        this.addSaveButtonToPost(post);
+        this.processedPosts.add(postId);
       });
     }
   }
