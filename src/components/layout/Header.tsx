@@ -33,7 +33,7 @@ export const Header = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
-            LinkedIn Post Saver
+            nudl
           </h1>
         </div>
 
