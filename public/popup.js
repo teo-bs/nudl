@@ -1,10 +1,15 @@
 
 // Popup script for LinkedIn Post Saver
+let userDetails = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     await initializePopup();
 });
 
 async function initializePopup() {
+    // Load user details first
+    await loadUserDetails();
+    
     // Load saved posts and update UI
     await loadRecentPosts();
     await updateStats();
@@ -139,9 +144,8 @@ async function checkExtensionStatus() {
 }
 
 function openDashboard() {
-    // For now, we'll get the current domain and construct the dashboard URL
-    // In production, this should be your actual domain
-    const dashboardUrl = window.location.protocol + '//' + window.location.host + '/';
+    // Open the actual dashboard URL
+    const dashboardUrl = 'https://nudl.lovable.app/dashboard';
     chrome.tabs.create({ url: dashboardUrl });
 }
 
@@ -181,6 +185,71 @@ function formatDate(dateString) {
         } else {
             return date.toLocaleDateString();
         }
+    }
+}
+
+async function loadUserDetails() {
+    try {
+        // Try to get user details from the web app
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        // First try to get from nudl.lovable.app tabs
+        const tabs = await chrome.tabs.query({});
+        const webAppTab = tabs.find(tab => 
+            tab.url && tab.url.includes('nudl.lovable.app')
+        );
+        
+        if (webAppTab) {
+            try {
+                const response = await chrome.tabs.sendMessage(webAppTab.id, { 
+                    action: 'getUserDetails' 
+                });
+                
+                if (response && response.user) {
+                    userDetails = response.user;
+                    updateUserUI();
+                }
+            } catch (error) {
+                console.log('Could not get user details from web app:', error);
+            }
+        }
+        
+        // If no user details, show logged out state
+        if (!userDetails) {
+            updateUserUI();
+        }
+    } catch (error) {
+        console.error('Error loading user details:', error);
+        updateUserUI();
+    }
+}
+
+function updateUserUI() {
+    const userSection = document.getElementById('userSection');
+    if (!userSection) return;
+    
+    if (userDetails) {
+        userSection.innerHTML = `
+            <div class="user-info">
+                <div class="user-avatar">${userDetails.email?.charAt(0).toUpperCase() || 'U'}</div>
+                <div class="user-details">
+                    <div class="user-name">${userDetails.user_metadata?.full_name || 'User'}</div>
+                    <div class="user-email">${userDetails.email}</div>
+                </div>
+                <div class="user-status online">●</div>
+            </div>
+        `;
+    } else {
+        userSection.innerHTML = `
+            <div class="user-info logged-out">
+                <div class="user-avatar">?</div>
+                <div class="user-details">
+                    <div class="user-name">Not logged in</div>
+                    <div class="user-email">Please log in to the dashboard</div>
+                </div>
+                <div class="user-status offline">●</div>
+            </div>
+        `;
     }
 }
 

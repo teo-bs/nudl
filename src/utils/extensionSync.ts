@@ -20,6 +20,24 @@ export function initializeExtensionSync() {
         } catch (error) {
           console.error('Error saving post from extension:', error);
         }
+      } else if (event.data.action === 'getUserDetails') {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (event.source) {
+            (event.source as any).postMessage({ 
+              action: 'getUserDetailsResponse', 
+              user: user 
+            }, '*');
+          }
+        } catch (error) {
+          console.error('Error getting user details:', error);
+          if (event.source) {
+            (event.source as any).postMessage({ 
+              action: 'getUserDetailsResponse', 
+              user: null 
+            }, '*');
+          }
+        }
       }
     });
 
@@ -34,7 +52,16 @@ export function initializeExtensionSync() {
             console.error('Error saving post from extension:', error);
             sendResponse({ success: false, error: (error as Error).message });
           }
+        } else if (message.action === 'getUserDetails') {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            sendResponse({ success: true, user: user });
+          } catch (error) {
+            console.error('Error getting user details:', error);
+            sendResponse({ success: false, user: null });
+          }
         }
+        return true; // Keep the message channel open for async response
       });
     }
   }
