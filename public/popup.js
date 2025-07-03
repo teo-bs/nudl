@@ -1,9 +1,16 @@
 
 // Popup script for LinkedIn Post Saver
 let userDetails = null;
-
 document.addEventListener('DOMContentLoaded', async () => {
     await initializePopup();
+});
+
+// Also check when popup becomes visible
+document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden) {
+        console.log('Popup became visible, refreshing user details');
+        await loadUserDetails();
+    }
 });
 
 async function initializePopup() {

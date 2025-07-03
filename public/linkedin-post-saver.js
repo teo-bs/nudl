@@ -246,57 +246,57 @@
     }
 
     isPromotedPost(postElement) {
-      // More comprehensive promoted post detection
-      const promotedSelectors = [
-        '.feed-shared-actor__sub-description',
-        '.feed-shared-actor__description', 
-        '.update-components-actor__meta-link',
-        '[data-test-id="sponsored-update-text"]',
-        '.feed-shared-text__text-view',
-        '.feed-shared-actor__name',
-        '.feed-shared-actor__content',
-        '.feed-shared-actor__meta',
-        '.feed-shared-text',
-        '.social-details-social-activity'
-      ];
-      
-      // Check all text content in the post
+      // Check all text content in the post first
       const allText = postElement.textContent?.toLowerCase() || '';
+      
+      // Check for promoted/sponsored indicators
       if (allText.includes('promoted') || allText.includes('sponsored') || allText.includes('•promoted')) {
         console.log('PostDetector: Found promoted/sponsored text in post content, skipping save button');
         return true;
       }
       
-      // Check specific selectors for promotion indicators  
-      const textElements = postElement.querySelectorAll(promotedSelectors.join(', '));
-      for (const element of textElements) {
-        if (element && element.textContent) {
-          const text = element.textContent.toLowerCase().trim();
-          if (text.includes('promoted') || text.includes('sponsored') || text === 'promoted') {
-            console.log('PostDetector: Found promoted/sponsored in selector, skipping save button');
-            return true;
-          }
+      return false;
+    }
+
+    isJobUpdate(postElement) {
+      // Check for job update indicators
+      const allText = postElement.textContent?.toLowerCase() || '';
+      
+      // Check for job-related keywords
+      const jobKeywords = [
+        'is hiring',
+        'we\'re hiring',
+        'join our team',
+        'job opportunity',
+        'open position',
+        'career opportunity',
+        'apply now',
+        'new job',
+        'job opening',
+        'hiring for',
+        'looking for a',
+        'posted a job'
+      ];
+      
+      for (const keyword of jobKeywords) {
+        if (allText.includes(keyword)) {
+          console.log('PostDetector: Found job update keywords, skipping save button');
+          return true;
         }
       }
       
-      // Check for promoted badges and aria labels
-      const promotedBadges = postElement.querySelectorAll([
-        '[aria-label*="Promoted"]',
-        '[aria-label*="Sponsored"]', 
-        '[aria-label*="promoted"]',
-        '[aria-label*="sponsored"]',
-        '.artdeco-entity-lockup__badge',
-        '.feed-shared-actor__description [data-test-id]',
-        '[data-test-id*="sponsored"]',
-        '[data-test-id*="promoted"]'
-      ].join(', '));
+      // Check for job posting elements
+      const jobSelectors = [
+        '[data-test-id*="job"]',
+        '.job-posting',
+        '.hiring-card',
+        '[aria-label*="job"]',
+        '[aria-label*="hiring"]'
+      ];
       
-      for (const badge of promotedBadges) {
-        const ariaLabel = badge.getAttribute('aria-label')?.toLowerCase() || '';
-        const textContent = badge.textContent?.toLowerCase() || '';
-        if (ariaLabel.includes('promoted') || ariaLabel.includes('sponsored') || 
-            textContent.includes('promoted') || textContent.includes('sponsored')) {
-          console.log('PostDetector: Found promoted badge/aria-label, skipping save button');
+      for (const selector of jobSelectors) {
+        if (postElement.querySelector(selector)) {
+          console.log('PostDetector: Found job posting elements, skipping save button');
           return true;
         }
       }
@@ -320,11 +320,18 @@
         allPosts.forEach((post, index) => {
           const postId = this.getPostId(post);
           if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
+            // Check if this post should be skipped
+            if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
+              console.log(`PostDetector: Skipping post ${index + 1} - promoted or job update`);
+              this.processedPosts.add(postId); // Mark as processed so we don't check again
+              return;
+            }
+            
             console.log(`PostDetector: Processing new post ${index + 1}`, post);
             this.addSaveButtonToPost(post);
             this.processedPosts.add(postId);
           } else {
-            console.log(`PostDetector: Post ${index + 1} already processed or has button or is promoted`);
+            console.log(`PostDetector: Post ${index + 1} already processed or has button`);
           }
         });
       } catch (error) {
@@ -344,9 +351,9 @@
       try {
         console.log('PostDetector: Adding save button to post', postElement);
         
-        // Check if this is a promoted post
-        if (this.isPromotedPost(postElement)) {
-          console.log('PostDetector: Skipping promoted post');
+        // Double-check if this post should be skipped (redundant safety check)
+        if (this.isPromotedPost(postElement) || this.isJobUpdate(postElement)) {
+          console.log('PostDetector: Skipping post - promoted or job update');
           return;
         }
         
@@ -459,7 +466,14 @@
       
       uniquePosts.forEach(post => {
         const postId = this.getPostId(post);
-        if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn') && !this.isPromotedPost(post)) {
+        if (postId && !this.processedPosts.has(postId) && !post.querySelector('.linkedin-post-saver-btn')) {
+          // Check if this post should be skipped
+          if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
+            console.log('PostDetector: Skipping new post - promoted or job update');
+            this.processedPosts.add(postId); // Mark as processed so we don't check again
+            return;
+          }
+          
           console.log('PostDetector: Adding button to new post', post);
           this.addSaveButtonToPost(post);
           this.processedPosts.add(postId);
