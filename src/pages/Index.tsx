@@ -71,7 +71,9 @@ const Index = () => {
       {/* Header */}
       <header className="fixed top-0 w-full z-50 glass border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="text-2xl font-bold text-primary">nudl</div>
+          <Link to="/" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity">
+            nudl
+          </Link>
           <div className="flex items-center gap-4">
             {user ? (
               <Link to="/dashboard">
@@ -329,7 +331,9 @@ const Index = () => {
       <footer className="py-12 px-4 border-t border-border/50">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-2xl font-bold text-primary">nudl</div>
+            <Link to="/" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity">
+              nudl
+            </Link>
             <div className="flex flex-wrap items-center gap-6 text-muted-foreground">
               <Link to="#" className="hover:text-foreground transition-colors">Product</Link>
               <Link to="#" className="hover:text-foreground transition-colors">Privacy</Link>
