@@ -14,7 +14,7 @@ const Index = () => {
     {
       icon: "🧠",
       title: "AI-Powered Tagging",
-      description: "Nudl reads every post you save and instantly adds smart tags like \"Productivity,\" \"Hiring,\" or \"Startups.\""
+      description: "Croi reads every post you save and instantly adds smart tags like \"Productivity,\" \"Hiring,\" or \"Startups.\""
     },
     {
       icon: "📁",
@@ -24,12 +24,12 @@ const Index = () => {
     {
       icon: "⚙️",
       title: "Custom Categorization Rules",
-      description: "Want to tag posts with \"Design\" if they mention \"Figma\"? You can do that. Nudl is fully customizable."
+      description: "Want to tag posts with \"Design\" if they mention \"Figma\"? You can do that. Croi is fully customizable."
     },
     {
       icon: "📥",
       title: "Import Past Saves",
-      description: "Nudl helps you bring in the posts you already saved on LinkedIn."
+      description: "Croi helps you bring in the posts you already saved on LinkedIn."
     },
     {
       icon: "🔍",
@@ -62,10 +62,10 @@ const Index = () => {
   ];
 
   const steps = [
-    "Install the Nudl Chrome extension",
+    "Install the Croi Chrome extension",
     "Click \"Save\" on any LinkedIn post", 
-    "Nudl stores the post in your dashboard",
-    "AI automatically tags and categorizes it",
+                "Croi stores the post in your dashboard",
+                "AI automatically tags and categorizes it",
     "You search, browse, and rediscover any post in seconds"
   ];
 
@@ -75,7 +75,7 @@ const Index = () => {
       <header className="fixed top-0 w-full z-50 glass border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold text-[hsl(var(--text-head))] hover:opacity-80 transition-opacity">
-            nudl
+            Croi
           </Link>
           <div className="flex items-center gap-4">
             {user ? (
@@ -98,11 +98,11 @@ const Index = () => {
             Stop Losing the Posts You Save
           </h1>
           <p className="text-xl md:text-2xl text-[hsl(var(--text-body))] mb-12 max-w-3xl mx-auto leading-relaxed">
-            Nudl is your AI-powered LinkedIn save button that organizes, tags, and resurfaces content — automatically.
+            Croi is your AI-powered LinkedIn save button that organizes, tags, and resurfaces content — automatically.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button variant="coral" size="xl" className="w-full sm:w-auto">
-              Install Nudl
+              Install Croi
             </Button>
             <Button variant="coral-outline" size="xl" className="w-full sm:w-auto">
               Watch Demo
@@ -131,7 +131,7 @@ const Index = () => {
           </p>
           <div className="glass-card p-8 inline-block">
             <p className="text-2xl font-semibold text-[hsl(var(--accent-main))]">
-              Nudl brings those posts back to life. Organized. Smart. Useful.
+              Croi brings those posts back to life. Organized. Smart. Useful.
             </p>
           </div>
         </div>
@@ -140,7 +140,7 @@ const Index = () => {
       {/* How It Works */}
       <AnimatedSection className="py-20 px-4" delay={200}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-[hsl(var(--text-head))]">How Nudl Works</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-[hsl(var(--text-head))]">How Croi Works</h2>
           <div className="grid md:grid-cols-5 gap-8">
             {steps.map((step, index) => (
               <AnimatedSection key={index} className="text-center" delay={index * 120}>
@@ -157,7 +157,7 @@ const Index = () => {
       {/* Core Features */}
       <AnimatedSection className="py-20 px-4 gradient-section" delay={400}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-[hsl(var(--text-head))]">What Nudl Does</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-[hsl(var(--text-head))]">What Croi Does</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <AnimatedSection key={index} delay={index * 120}>
@@ -186,7 +186,7 @@ const Index = () => {
             <Card className="glass-card border-red-200/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-600">
-                  <span>❌</span> Before Nudl
+                  <span>❌</span> Before Croi
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -202,7 +202,7 @@ const Index = () => {
             <Card className="glass-card border-[hsl(var(--accent-main))]/30 shadow-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-[hsl(var(--accent-main))]">
-                  <span>✅</span> With Nudl
+                  <span>✅</span> With Croi
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -221,7 +221,7 @@ const Index = () => {
       {/* Who It's For */}
       <AnimatedSection className="py-20 px-4 gradient-section" delay={800}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-[hsl(var(--text-head))]">Who Nudl Helps</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-[hsl(var(--text-head))]">Who Croi Helps</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {personas.map((persona, index) => (
               <AnimatedSection key={index} delay={index * 120}>
@@ -245,9 +245,9 @@ const Index = () => {
       {/* Demo */}
       <AnimatedSection className="py-20 px-4" delay={1000}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-8 text-[hsl(var(--text-head))]">See Nudl in Action</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 text-[hsl(var(--text-head))]">See Croi in Action</h2>
           <p className="text-xl text-[hsl(var(--text-body))] mb-12">
-            Watch how Nudl transforms a simple "save" into a superpower.
+            Watch how Croi transforms a simple "save" into a superpower.
           </p>
           <div className="glass-card p-12">
             <div className="bg-[hsl(var(--accent-light))] rounded-xl p-16 text-center">
@@ -325,11 +325,11 @@ const Index = () => {
             Build your second brain — one saved post at a time.
           </h2>
           <p className="text-xl text-[hsl(var(--text-body))] mb-12">
-            Nudl helps you remember, organize, and act on what matters.
+            Croi helps you remember, organize, and act on what matters.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button variant="coral" size="xl" className="w-full sm:w-auto">
-              Install Nudl
+              Install Croi
             </Button>
             <Button variant="coral-outline" size="xl" className="w-full sm:w-auto">
               Watch Demo
@@ -343,7 +343,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Link to="/" className="text-2xl font-bold text-[hsl(var(--accent-main))] hover:opacity-80 transition-opacity">
-              nudl
+              Croi
             </Link>
             <div className="flex flex-wrap items-center gap-6 text-[hsl(var(--text-body))]">
               <Link to="#" className="hover:text-[hsl(var(--text-head))] transition-colors">Product</Link>

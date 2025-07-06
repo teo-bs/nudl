@@ -1,7 +1,7 @@
 
 {
   "manifest_version": 3,
-  "name": "LinkedIn Post Saver",
+  "name": "Croi - LinkedIn Post Saver",
   "version": "1.0.0",
   "description": "Save and organize LinkedIn posts with AI-powered tagging",
   "permissions": [
@@ -38,7 +38,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "LinkedIn Post Saver"
+    "default_title": "Croi - LinkedIn Post Saver"
   },
   "web_accessible_resources": [
     {

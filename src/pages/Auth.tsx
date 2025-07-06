@@ -32,7 +32,7 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            nudl
+            Croi
           </h1>
           <p className="text-muted-foreground">
             Save and organize your favorite LinkedIn posts with AI-powered tagging
