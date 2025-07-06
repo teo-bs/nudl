@@ -1,3 +1,4 @@
+
 /// <reference types="chrome"/>
 
 import { createClient } from '@supabase/supabase-js';
@@ -28,13 +29,11 @@ let supabase: ReturnType<typeof createClient<Database>> | null = null;
 chrome.runtime.onInstalled.addListener(async () => {
   console.log('Croi Extension installed');
   
-  // Set up default Supabase credentials in chrome.storage.sync
-  const defaultSupabaseConfig = {
+  // Set ONLY the upper-case keys
+  await chrome.storage.sync.set({
     SUPABASE_URL: 'https://bcynqlevzxoyewdhmyhv.supabase.co',
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeW5xbGV2enhveWV3ZGhteWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTk2OTUsImV4cCI6MjA2NjkzNTY5NX0.RraoC23cLXmvYngj4A8oDid0EVTvIDHCAI6hdYEWQyE'
-  };
-
-  await chrome.storage.sync.set(defaultSupabaseConfig);
+  });
   
   // Set up default local storage
   chrome.storage.local.set({
@@ -53,23 +52,32 @@ chrome.runtime.onInstalled.addListener(async () => {
 // Initialize Supabase client with stored credentials
 async function initializeSupabase() {
   try {
-    const config = await chrome.storage.sync.get(['SUPABASE_URL', 'SUPABASE_ANON_KEY']);
+    // Read both upper-case and lower-case keys from chrome.storage.sync
+    const config = await chrome.storage.sync.get([
+      'SUPABASE_URL', 'SUPABASE_ANON_KEY',
+      'supabaseUrl', 'supabaseAnonKey'
+    ]);
     
-    if (config.SUPABASE_URL && config.SUPABASE_ANON_KEY) {
-      const customStorage = new ChromeExtensionStorage();
-      
-      supabase = createClient<Database>(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, {
-        auth: {
-          storage: customStorage as any,
-          persistSession: true,
-          autoRefreshToken: true,
-        }
-      });
-      
-      console.log('Supabase client initialized successfully');
-    } else {
-      console.warn('Supabase credentials not found in storage');
+    // Pick whichever pair exists (prefer upper-case)
+    let supabaseUrl = config.SUPABASE_URL || config.supabaseUrl;
+    let supabaseAnonKey = config.SUPABASE_ANON_KEY || config.supabaseAnonKey;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase credentials not found in storage');
+      return;
     }
+    
+    const customStorage = new ChromeExtensionStorage();
+    
+    supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        storage: customStorage as any,
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    });
+    
+    console.log('Supabase initialised');
   } catch (error) {
     console.error('Failed to initialize Supabase client:', error);
   }
