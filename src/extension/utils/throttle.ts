@@ -1,3 +1,4 @@
+/* eslint-disable prefer-spread */
 export function throttle<T extends (...args: any[]) => void>(
   func: T,
   delay: number
