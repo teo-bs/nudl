@@ -1,0 +1,93 @@
+/* Croi LinkedIn Extension Styles */
+.croi-btn-container {
+  @apply inline-flex mr-2;
+}
+
+.croi-btn-container.croi-btn-fallback {
+  @apply my-2 text-right border-t border-gray-200 pt-2;
+}
+
+.croi-btn {
+  @apply flex items-center gap-1 bg-white/10 backdrop-blur-md rounded-full px-3 py-1 text-sm text-white transition-all duration-200 cursor-pointer relative z-10;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.croi-btn:hover {
+  @apply bg-white/20 ring-2;
+  background-color: #FF7A59;
+  border-color: #FF7A59;
+  ring-color: rgba(255, 122, 89, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.croi-btn:active {
+  transform: translateY(0);
+}
+
+.croi-btn.saved {
+  @apply bg-green-500 border-green-500 text-white;
+}
+
+.croi-btn.saved:hover {
+  @apply bg-green-600 border-green-600;
+}
+
+.croi-btn:disabled {
+  @apply opacity-70 cursor-not-allowed;
+}
+
+.croi-spinner {
+  @apply w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
+}
+
+/* Notification styles */
+.croi-notification {
+  @apply fixed top-5 right-5 px-5 py-3 rounded-lg font-medium z-50 max-w-xs shadow-lg transition-all duration-300;
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.croi-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.croi-notification.success {
+  @apply bg-green-500 text-white;
+}
+
+.croi-notification.error {
+  @apply bg-red-500 text-white;
+}
+
+.croi-notification.info {
+  @apply bg-blue-500 text-white;
+}
+
+/* Ensure proper alignment in action bars */
+.feed-shared-social-action-bar .croi-btn-container {
+  @apply inline-flex items-center mr-3;
+  order: -1;
+}
+
+.social-actions-bar .croi-btn-container {
+  @apply inline-flex items-center mr-3;
+}
+
+.croi-btn-container {
+  @apply inline-flex items-center;
+  vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .croi-btn {
+    @apply px-2 py-1 text-xs gap-1;
+  }
+  
+  .croi-notification {
+    @apply right-2 top-2 max-w-[calc(100vw-1rem)];
+  }
+}

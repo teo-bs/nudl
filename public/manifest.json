@@ -17,16 +17,8 @@
   "content_scripts": [
     {
       "matches": ["https://www.linkedin.com/*"],
-      "js": [
-        "storage-manager.js",
-        "notification-manager.js", 
-        "post-extractor.js",
-        "button-manager.js",
-        "post-detector.js",
-        "extension-initializer.js",
-        "main-content-script.js"
-      ],
-      "css": ["content-script.css"]
+      "js": ["content.js"],
+      "css": ["content-styles.css"]
     },
     {
       "matches": ["https://nudl.lovable.app/*", "https://*.lovable.app/*"],
@@ -34,7 +26,7 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "service-worker.js"
   },
   "action": {
     "default_popup": "popup.html",
@@ -42,7 +34,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["popup.html"],
+      "resources": ["popup.html", "content-styles.css"],
       "matches": ["https://www.linkedin.com/*"]
     }
   ]
