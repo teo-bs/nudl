@@ -1,4 +1,5 @@
 
+
 import { POST_SELECTORS } from './selectors';
 import { isPromotedPost, isJobPost } from './filters';
 import { ButtonManager } from '../button-manager';
@@ -232,3 +233,4 @@ export class PostDetector {
     });
   }
 }
+
