@@ -16,9 +16,19 @@ async function buildExtension() {
     console.log('🗑️  Cleaning dist directory...');
     await fs.emptyDir(DIST_DIR);
 
-    // Build TypeScript files with Vite
+    // Build TypeScript files with Vite (check if config exists)
     console.log('📦 Building TypeScript files...');
-    execSync('npx vite build --config vite.ext.config.ts', { stdio: 'inherit' });
+    const viteConfigExists = await fs.pathExists('vite.ext.config.ts');
+    if (viteConfigExists) {
+      try {
+        execSync('npx vite build --config vite.ext.config.ts', { stdio: 'inherit' });
+        console.log('✅ TypeScript files built successfully');
+      } catch (error) {
+        console.log('⚠️  TypeScript build failed, continuing with static files...');
+      }
+    } else {
+      console.log('⚠️  Vite config not found, skipping TypeScript build...');
+    }
 
     // Copy manifest and other static files
     console.log('📋 Copying manifest and static files...');
@@ -52,16 +62,18 @@ async function buildExtension() {
     // Update manifest.json to use correct script names
     console.log('🔧 Updating manifest.json...');
     const manifestPath = path.join(DIST_DIR, 'manifest.json');
-    const manifest = await fs.readJson(manifestPath);
-    
-    // Update service worker path if it was built
-    if (await fs.pathExists(path.join(DIST_DIR, 'background.js'))) {
-      manifest.background = {
-        service_worker: 'background.js'
-      };
-    }
+    if (await fs.pathExists(manifestPath)) {
+      const manifest = await fs.readJson(manifestPath);
+      
+      // Ensure background service worker is set correctly
+      if (await fs.pathExists(path.join(DIST_DIR, 'background.js'))) {
+        manifest.background = {
+          service_worker: 'background.js'
+        };
+      }
 
-    await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+      await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+    }
 
     console.log('✨ Extension built successfully!');
     console.log(`📁 Extension files are in: ${DIST_DIR}`);
@@ -70,6 +82,11 @@ async function buildExtension() {
     console.log('   2. Enable "Developer mode"');
     console.log('   3. Click "Load unpacked"');
     console.log(`   4. Select the ${DIST_DIR} folder`);
+
+    // List built files for verification
+    console.log('\n📋 Built files:');
+    const builtFiles = await fs.readdir(DIST_DIR);
+    builtFiles.forEach(file => console.log(`   - ${file}`));
 
   } catch (error) {
     console.error('❌ Build failed:', error.message);

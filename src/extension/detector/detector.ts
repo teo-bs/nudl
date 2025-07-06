@@ -1,75 +1,97 @@
 
 import { POST_SELECTORS } from './selectors';
 import { isPromotedPost, isJobPost } from './filters';
-import { ButtonManager } from '../button-manager';
 import { throttle } from '../utils/throttle';
 
 export class PostDetector {
   private postSelectors: string[];
-  private buttonManager: ButtonManager;
+  private buttonManager: any;
   private processedPosts: Set<string>;
   private observerTimeout: number | null;
-  private throttledAddButtons: () => void;
+  private isInitialized: boolean;
 
   constructor() {
     this.postSelectors = POST_SELECTORS;
-    this.buttonManager = new ButtonManager();
     this.processedPosts = new Set();
     this.observerTimeout = null;
+    this.isInitialized = false;
     
-    // Throttle the addSaveButtonsToExistingPosts method
-    this.throttledAddButtons = throttle(() => {
-      this.addSaveButtonsToExistingPosts();
-    }, 800);
+    // Ensure ButtonManager is available
+    if (!window.ButtonManager) {
+      console.error('PostDetector: ButtonManager not available');
+      return;
+    }
     
-    console.log('PostDetector initialized with enhanced selectors:', this.postSelectors);
+    this.buttonManager = new window.ButtonManager();
+    
+    console.log('PostDetector initialized with enhanced selectors:', this.postSelectors.length, 'selectors');
   }
 
-  initialize(): void {
+  initialize() {
+    if (this.isInitialized) {
+      console.log('PostDetector: Already initialized, skipping');
+      return;
+    }
+    
+    if (!this.buttonManager) {
+      console.error('PostDetector: Cannot initialize without ButtonManager');
+      return;
+    }
+    
     console.log('PostDetector: Starting initialization');
-    this.throttledAddButtons();
-    this.observeNewPosts();
+    this.isInitialized = true;
+    
+    // Add initial delay to ensure page is ready
+    setTimeout(() => {
+      this.addSaveButtonsToExistingPosts();
+      this.observeNewPosts();
+    }, 1000);
   }
 
-  private addSaveButtonsToExistingPosts(): void {
+  private addSaveButtonsToExistingPosts() {
     try {
       console.log('PostDetector: Looking for existing posts...');
       
       const allPosts = document.querySelectorAll(this.postSelectors.join(', '));
       console.log(`PostDetector: Total posts found: ${allPosts.length}`);
       
+      let processedCount = 0;
+      let skippedCount = 0;
+      
       allPosts.forEach((post, index) => {
         const postId = this.getPostId(post) || `fallback-${index}-${Date.now()}`;
         
         // Skip if already has button
-        if (post.querySelector('.croi-btn')) {
-          console.log(`PostDetector: Post ${index + 1} already has button`);
+        if (post.querySelector('.linkedin-post-saver-btn')) {
+          skippedCount++;
           return;
         }
         
         // Skip if already processed
         if (this.processedPosts.has(postId)) {
-          console.log(`PostDetector: Post ${index + 1} already processed`);
+          skippedCount++;
           return;
         }
         
         // Check if this post should be skipped
         if (isPromotedPost(post) || isJobPost(post)) {
-          console.log(`PostDetector: Skipping post ${index + 1} - promoted or job update`);
           this.processedPosts.add(postId);
+          skippedCount++;
           return;
         }
         
-        console.log(`PostDetector: Processing new post ${index + 1}`, post);
         this.addSaveButtonToPost(post);
         this.processedPosts.add(postId);
+        processedCount++;
       });
+      
+      console.log(`PostDetector: Processed ${processedCount} posts, skipped ${skippedCount} posts`);
     } catch (error) {
       console.error('PostDetector: Error adding save buttons:', error);
     }
   }
 
-  private getPostId(postElement: Element): string | null {
+  private getPostId(postElement: Element): string {
     // Try multiple methods to get a unique ID
     const urn = postElement.getAttribute('data-urn') || 
                 postElement.getAttribute('data-id') || 
@@ -88,13 +110,10 @@ export class PostDetector {
     return `position-${Array.from(document.querySelectorAll(this.postSelectors.join(', '))).indexOf(postElement)}`;
   }
 
-  private addSaveButtonToPost(postElement: Element): void {
+  private addSaveButtonToPost(postElement: Element) {
     try {
-      console.log('PostDetector: Adding save button to post', postElement);
-      
-      // Double-check if this post should be skipped (redundant safety check)
+      // Double-check if this post should be skipped
       if (isPromotedPost(postElement) || isJobPost(postElement)) {
-        console.log('PostDetector: Skipping post - promoted or job update');
         return;
       }
       
@@ -113,23 +132,20 @@ export class PostDetector {
       for (const selector of actionSelectors) {
         actionsBar = postElement.querySelector(selector);
         if (actionsBar) {
-          console.log(`PostDetector: Found actions bar with selector: ${selector}`);
           break;
         }
       }
       
       if (actionsBar) {
         const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'croi-btn-container';
+        buttonContainer.className = 'linkedin-post-saver-container';
+        buttonContainer.style.cssText = 'display: inline-flex; align-items: center; margin-right: 8px;';
         buttonContainer.appendChild(saveButton);
         
         // Insert at the beginning of the actions bar for better alignment
         actionsBar.insertBefore(buttonContainer, actionsBar.firstChild);
-        console.log('PostDetector: Save button added successfully to actions bar');
       } else {
         // Fallback: add to a more reliable location within the post
-        console.log('PostDetector: No actions bar found, trying fallback locations');
-        
         const fallbackSelectors = [
           '.feed-shared-update-v2__description',
           '.feed-shared-text',
@@ -142,14 +158,12 @@ export class PostDetector {
           if (fallbackLocation) break;
         }
         
-        if (fallbackLocation) {
+        if (fallbackLocation && fallbackLocation.parentNode) {
           const buttonContainer = document.createElement('div');
-          buttonContainer.className = 'croi-btn-container croi-btn-fallback';
+          buttonContainer.className = 'linkedin-post-saver-container';
+          buttonContainer.style.cssText = 'margin: 10px 0; text-align: right; border-top: 1px solid #e0e0e0; padding-top: 8px;';
           buttonContainer.appendChild(saveButton);
-          fallbackLocation.parentNode?.insertBefore(buttonContainer, fallbackLocation.nextSibling);
-          console.log('PostDetector: Save button added to fallback location');
-        } else {
-          console.log('PostDetector: No suitable location found for save button');
+          fallbackLocation.parentNode.insertBefore(buttonContainer, fallbackLocation.nextSibling);
         }
       }
     } catch (error) {
@@ -157,8 +171,12 @@ export class PostDetector {
     }
   }
 
-  private observeNewPosts(): void {
+  private observeNewPosts() {
     console.log('PostDetector: Starting post observation');
+    
+    const throttledProcess = throttle(() => {
+      this.addSaveButtonsToExistingPosts();
+    }, 800);
     
     const observer = new MutationObserver((mutations) => {
       // Clear existing timeout to debounce rapid mutations
@@ -168,9 +186,8 @@ export class PostDetector {
       
       this.observerTimeout = window.setTimeout(() => {
         this.processNewPosts(mutations);
-        // Also re-check existing posts periodically with throttling
-        this.throttledAddButtons();
-      }, 500);
+        throttledProcess();
+      }, 800);
     });
 
     observer.observe(document.body, {
@@ -181,13 +198,14 @@ export class PostDetector {
     console.log('PostDetector: Observer started');
   }
 
-  private processNewPosts(mutations: MutationRecord[]): void {
+  private processNewPosts(mutations: MutationRecord[]) {
     const newPosts: Element[] = [];
     
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
           const element = node as Element;
+          
           // Check if the node itself is a post
           if (element.matches && element.matches(this.postSelectors.join(', '))) {
             newPosts.push(element);
@@ -204,13 +222,15 @@ export class PostDetector {
 
     // Process unique posts only
     const uniquePosts = Array.from(new Set(newPosts));
-    console.log(`PostDetector: Processing ${uniquePosts.length} unique new posts`);
+    if (uniquePosts.length > 0) {
+      console.log(`PostDetector: Processing ${uniquePosts.length} unique new posts`);
+    }
     
     uniquePosts.forEach(post => {
       const postId = this.getPostId(post) || `new-${Date.now()}-${Math.random()}`;
       
       // Skip if already has button
-      if (post.querySelector('.croi-btn')) {
+      if (post.querySelector('.linkedin-post-saver-btn')) {
         return;
       }
       
@@ -221,12 +241,10 @@ export class PostDetector {
       
       // Check if this post should be skipped
       if (isPromotedPost(post) || isJobPost(post)) {
-        console.log('PostDetector: Skipping new post - promoted or job update');
         this.processedPosts.add(postId);
         return;
       }
       
-      console.log('PostDetector: Adding button to new post', post);
       this.addSaveButtonToPost(post);
       this.processedPosts.add(postId);
     });
