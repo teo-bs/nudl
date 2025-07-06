@@ -1,3 +1,4 @@
+
 /// <reference types="chrome"/>
 
 export interface PostData {
@@ -38,9 +39,26 @@ export class StorageManager {
 
   async getSavedPosts(): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get(['savedPosts']).then(result => {
-        resolve(result.savedPosts || []);
-      }).catch(reject);
+      if (!chrome.runtime || !chrome.runtime.sendMessage) {
+        reject(new Error('Chrome runtime not available'));
+        return;
+      }
+
+      chrome.runtime.sendMessage(
+        { action: 'getSavedPosts' },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          
+          if (response && response.success) {
+            resolve(response.posts);
+          } else {
+            reject(new Error(response?.error || 'Failed to get saved posts'));
+          }
+        }
+      );
     });
   }
 }

@@ -30,8 +30,8 @@ chrome.runtime.onInstalled.addListener(async () => {
   
   // Set up default Supabase credentials in chrome.storage.sync
   const defaultSupabaseConfig = {
-    supabaseUrl: 'https://bcynqlevzxoyewdhmyhv.supabase.co',
-    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeW5xbGV2enhveWV3ZGhteWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTk2OTUsImV4cCI6MjA2NjkzNTY5NX0.RraoC23cLXmvYngj4A8oDid0EVTvIDHCAI6hdYEWQyE'
+    SUPABASE_URL: 'https://bcynqlevzxoyewdhmyhv.supabase.co',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeW5xbGV2enhveWV3ZGhteWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNTk2OTUsImV4cCI6MjA2NjkzNTY5NX0.RraoC23cLXmvYngj4A8oDid0EVTvIDHCAI6hdYEWQyE'
   };
 
   await chrome.storage.sync.set(defaultSupabaseConfig);
@@ -53,12 +53,12 @@ chrome.runtime.onInstalled.addListener(async () => {
 // Initialize Supabase client with stored credentials
 async function initializeSupabase() {
   try {
-    const config = await chrome.storage.sync.get(['supabaseUrl', 'supabaseAnonKey']);
+    const config = await chrome.storage.sync.get(['SUPABASE_URL', 'SUPABASE_ANON_KEY']);
     
-    if (config.supabaseUrl && config.supabaseAnonKey) {
+    if (config.SUPABASE_URL && config.SUPABASE_ANON_KEY) {
       const customStorage = new ChromeExtensionStorage();
       
-      supabase = createClient<Database>(config.supabaseUrl, config.supabaseAnonKey, {
+      supabase = createClient<Database>(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, {
         auth: {
           storage: customStorage as any,
           persistSession: true,
@@ -73,6 +73,85 @@ async function initializeSupabase() {
   } catch (error) {
     console.error('Failed to initialize Supabase client:', error);
   }
+}
+
+// Save post to Supabase
+async function savePostToSupabase(postData: any): Promise<any> {
+  if (!supabase) {
+    throw new Error('Supabase client not initialized');
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Check if post already exists in Supabase
+  const { data: existingPosts, error: checkError } = await supabase
+    .from('saved_posts')
+    .select('id')
+    .or(`post_url.eq.${postData.post_url},linkedin_post_id.eq.${postData.linkedin_post_id}`)
+    .eq('user_id', user.id);
+
+  if (checkError) throw checkError;
+
+  if (existingPosts && existingPosts.length > 0) {
+    throw new Error('Post already saved');
+  }
+
+  // Prepare post data for Supabase
+  const supabasePostData = {
+    user_id: user.id,
+    content: postData.content || '',
+    post_url: postData.post_url,
+    linkedin_post_id: postData.linkedin_post_id,
+    title: postData.title,
+    author_name: postData.author_name,
+    author_profile_url: postData.author_profile_url,
+    author_avatar_url: postData.author_avatar_url,
+    post_date: postData.post_date,
+    notes: postData.notes,
+    is_favorite: false,
+    read_status: false,
+    status: 'active' as const
+  };
+
+  // Insert to Supabase
+  const { data: supabasePost, error: insertError } = await supabase
+    .from('saved_posts')
+    .insert(supabasePostData)
+    .select()
+    .single();
+
+  if (insertError) throw insertError;
+
+  return supabasePost;
+}
+
+// Get posts from Supabase
+async function getPostsFromSupabase(): Promise<any[]> {
+  if (!supabase) {
+    throw new Error('Supabase client not initialized');
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const { data: supabasePosts, error: fetchError } = await supabase
+    .from('saved_posts')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (fetchError) throw fetchError;
+
+  return supabasePosts || [];
 }
 
 // Handle messages from content script and popup
@@ -108,53 +187,9 @@ async function handleSavePost(postData: any, sendResponse: (response: any) => vo
     // Try to save to Supabase first (if user is authenticated)
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          // Check if post already exists in Supabase
-          const { data: existingPosts, error: checkError } = await supabase
-            .from('saved_posts')
-            .select('id')
-            .or(`post_url.eq.${postData.post_url},linkedin_post_id.eq.${postData.linkedin_post_id}`)
-            .eq('user_id', user.id);
-
-          if (checkError) throw checkError;
-
-          if (existingPosts && existingPosts.length > 0) {
-            sendResponse({ success: false, error: 'Post already saved' });
-            return;
-          }
-
-          // Prepare post data for Supabase
-          const supabasePostData = {
-            user_id: user.id,
-            content: postData.content || '',
-            post_url: postData.post_url,
-            linkedin_post_id: postData.linkedin_post_id,
-            title: postData.title,
-            author_name: postData.author_name,
-            author_profile_url: postData.author_profile_url,
-            author_avatar_url: postData.author_avatar_url,
-            post_date: postData.post_date,
-            notes: postData.notes,
-            is_favorite: false,
-            read_status: false,
-            status: 'active' as const
-          };
-
-          // Upsert to Supabase
-          const { data: supabasePost, error: insertError } = await supabase
-            .from('saved_posts')
-            .insert(supabasePostData)
-            .select()
-            .single();
-
-          if (insertError) throw insertError;
-
-          newPost = supabasePost;
-          savedToSupabase = true;
-          console.log('Post saved to Supabase successfully');
-        }
+        newPost = await savePostToSupabase(postData);
+        savedToSupabase = true;
+        console.log('Post saved to Supabase successfully');
       } catch (supabaseError) {
         console.warn('Failed to save to Supabase, falling back to local storage:', supabaseError);
       }
@@ -171,7 +206,7 @@ async function handleSavePost(postData: any, sendResponse: (response: any) => vo
         post.linkedin_post_id === postData.linkedin_post_id
       );
       
-      if (existingPost && !savedToSupabase) {
+      if (existingPost) {
         sendResponse({ success: false, error: 'Post already saved' });
         return;
       }
@@ -231,26 +266,12 @@ async function handleGetSavedPosts(sendResponse: (response: any) => void) {
     // Try to fetch from Supabase first (if user is authenticated)
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const { data: supabasePosts, error: fetchError } = await supabase
-            .from('saved_posts')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(100);
+        posts = await getPostsFromSupabase();
+        fetchedFromSupabase = true;
+        console.log('Posts fetched from Supabase successfully');
 
-          if (fetchError) throw fetchError;
-
-          posts = supabasePosts || [];
-          fetchedFromSupabase = true;
-          console.log('Posts fetched from Supabase successfully');
-
-          // Also update local storage with Supabase data for offline access
-          await chrome.storage.local.set({ savedPosts: posts });
-        }
+        // Also update local storage with Supabase data for offline access
+        await chrome.storage.local.set({ savedPosts: posts });
       } catch (supabaseError) {
         console.warn('Failed to fetch from Supabase, falling back to local storage:', supabaseError);
       }
@@ -302,47 +323,13 @@ async function handleSyncWithBackend(sendResponse: (response: any) => void) {
 
     for (const post of savedPosts) {
       try {
-        // Check if post already exists in Supabase
-        const { data: existingPosts, error: checkError } = await supabase
-          .from('saved_posts')
-          .select('id')
-          .or(`post_url.eq.${post.post_url},linkedin_post_id.eq.${post.linkedin_post_id}`)
-          .eq('user_id', user.id);
-
-        if (checkError) throw checkError;
-
-        if (existingPosts && existingPosts.length > 0) {
-          continue; // Skip if already exists
-        }
-
-        // Prepare post data for Supabase
-        const supabasePostData = {
-          user_id: user.id,
-          content: post.content || '',
-          post_url: post.post_url,
-          linkedin_post_id: post.linkedin_post_id,
-          title: post.title,
-          author_name: post.author_name,
-          author_profile_url: post.author_profile_url,
-          author_avatar_url: post.author_avatar_url,
-          post_date: post.post_date,
-          notes: post.notes,
-          is_favorite: post.is_favorite || false,
-          read_status: post.read_status || false,
-          status: 'active' as const
-        };
-
-        // Insert to Supabase
-        const { error: insertError } = await supabase
-          .from('saved_posts')
-          .insert(supabasePostData);
-
-        if (insertError) throw insertError;
-
+        await savePostToSupabase(post);
         syncedCount++;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        errors.push(`Failed to sync post "${post.title || post.post_url}": ${errorMessage}`);
+        if (!errorMessage.includes('already saved')) {
+          errors.push(`Failed to sync post "${post.title || post.post_url}": ${errorMessage}`);
+        }
       }
     }
     
