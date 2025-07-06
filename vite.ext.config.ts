@@ -1,42 +1,35 @@
-import { defineConfig } from "vite";
-import path from "path";
-import { copyFileSync } from "fs";
+
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
-    outDir: "dist/extension",
-    emptyOutDir: true,
-    sourcemap: true,
+    outDir: 'public',
+    emptyOutDir: false,
     rollupOptions: {
       input: {
-        "content": path.resolve(__dirname, "src/extension/content.ts"),
-        "service-worker": path.resolve(__dirname, "src/extension/service-worker.ts"),
+        'main-content-script': 'src/extension/content.ts',
+        'dashboard-content-script': 'src/utils/extensionSync.ts',
+        'background': 'src/extension/service-worker.ts'
       },
       output: {
-        entryFileNames: "[name].js",
-        format: "iife",
-      },
-    },
-    target: "es2020",
-  },
-  plugins: [
-    {
-      name: 'copy-css',
-      generateBundle() {
-        // Copy CSS file to dist
-        copyFileSync(
-          path.resolve(__dirname, "src/extension/content-styles.css"),
-          path.resolve(__dirname, "dist/extension/content-styles.css")
-        );
+        entryFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId;
+          if (facadeModuleId?.includes('content.ts')) {
+            return 'main-content-script.js';
+          }
+          if (facadeModuleId?.includes('extensionSync.ts')) {
+            return 'dashboard-content-script.js';
+          }
+          if (facadeModuleId?.includes('service-worker.ts')) {
+            return 'background.js';
+          }
+          return '[name].js';
+        },
+        format: 'iife'
       }
     }
-  ],
-  esbuild: {
-    target: "es2020",
   },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+  define: {
+    'process.env.NODE_ENV': '"production"'
+  }
 });

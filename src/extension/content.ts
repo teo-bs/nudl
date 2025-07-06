@@ -1,3 +1,4 @@
+
 /// <reference types="chrome"/>
 import { PostDetector } from './detector/detector';
 import { StorageManager } from './storage-manager';
@@ -9,13 +10,87 @@ function injectStyles() {
   const style = document.createElement('style');
   style.id = 'croi-styles';
   
-  // Import styles directly as text
-  fetch(chrome.runtime.getURL('content-styles.css'))
-    .then(response => response.text())
-    .then(css => {
-      style.textContent = css;
-      document.head.appendChild(style);
-    });
+  // Basic styles for the extension
+  style.textContent = `
+    .croi-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: #0A66C2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-right: 8px;
+    }
+    
+    .croi-btn:hover:not(:disabled) {
+      background: #084d96;
+    }
+    
+    .croi-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .croi-btn.saved {
+      background: #057642;
+    }
+    
+    .croi-btn-container {
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .croi-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: croi-spin 1s linear infinite;
+    }
+    
+    @keyframes croi-spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .croi-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: 4px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 10000;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .croi-notification.show {
+      transform: translateX(0);
+    }
+    
+    .croi-notification.success {
+      background: #057642;
+    }
+    
+    .croi-notification.error {
+      background: #d92d20;
+    }
+    
+    .croi-notification.info {
+      background: #0A66C2;
+    }
+  `;
+  
+  document.head.appendChild(style);
 }
 
 // Main content script execution

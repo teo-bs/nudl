@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface ExtensionPostData {
@@ -15,6 +16,7 @@ export function initializeExtensionSync() {
   if (typeof window !== 'undefined') {
     console.log('Extension sync initialized - listening for messages');
     
+    // Listen for window messages from extension
     window.addEventListener('message', async (event) => {
       console.log('Extension sync received message:', event.data);
       
@@ -58,10 +60,12 @@ export function initializeExtensionSync() {
     // Also listen for chrome extension messages if available
     if ((window as any).chrome && (window as any).chrome.runtime) {
       (window as any).chrome.runtime.onMessage?.addListener(async (message: any, sender: any, sendResponse: any) => {
+        console.log('Extension sync received chrome message:', message);
+        
         if (message.action === 'savePostToDatabase') {
           try {
-            await savePostToDatabase(message.postData);
-            sendResponse({ success: true });
+            const result = await savePostToDatabase(message.postData);
+            sendResponse({ success: true, result });
           } catch (error) {
             console.error('Error saving post from extension:', error);
             sendResponse({ success: false, error: (error as Error).message });
@@ -134,4 +138,9 @@ async function savePostToDatabase(postData: ExtensionPostData) {
 
   console.log('Post saved successfully to database:', savedPost);
   return savedPost;
+}
+
+// Auto-initialize when this module is loaded
+if (typeof window !== 'undefined') {
+  initializeExtensionSync();
 }
