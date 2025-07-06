@@ -15,10 +15,40 @@ class PostDetector {
       '.update-components-update-v2',
       '.feed-shared-post'
     ];
+    
+    // Ensure ButtonManager is available
+    if (!window.ButtonManager) {
+      console.error('PostDetector: ButtonManager not available');
+      return;
+    }
+    
     this.buttonManager = new window.ButtonManager();
     this.processedPosts = new Set();
     this.observerTimeout = null;
-    console.log('PostDetector initialized with enhanced selectors:', this.postSelectors);
+    this.isInitialized = false;
+    
+    console.log('PostDetector initialized with enhanced selectors:', this.postSelectors.length, 'selectors');
+  }
+
+  initialize() {
+    if (this.isInitialized) {
+      console.log('PostDetector: Already initialized, skipping');
+      return;
+    }
+    
+    if (!this.buttonManager) {
+      console.error('PostDetector: Cannot initialize without ButtonManager');
+      return;
+    }
+    
+    console.log('PostDetector: Starting initialization');
+    this.isInitialized = true;
+    
+    // Add initial delay to ensure page is ready
+    setTimeout(() => {
+      this.addSaveButtonsToExistingPosts();
+      this.observeNewPosts();
+    }, 1000);
   }
 
   isPromotedPost(postElement) {
@@ -27,7 +57,6 @@ class PostDetector {
     
     // Check for promoted/sponsored indicators
     if (allText.includes('promoted') || allText.includes('sponsored') || allText.includes('•promoted')) {
-      console.log('PostDetector: Found promoted/sponsored text in post content, skipping save button');
       return true;
     }
     
@@ -56,7 +85,6 @@ class PostDetector {
     
     for (const keyword of jobKeywords) {
       if (allText.includes(keyword)) {
-        console.log('PostDetector: Found job update keywords, skipping save button');
         return true;
       }
     }
@@ -72,18 +100,11 @@ class PostDetector {
     
     for (const selector of jobSelectors) {
       if (postElement.querySelector(selector)) {
-        console.log('PostDetector: Found job posting elements, skipping save button');
         return true;
       }
     }
     
     return false;
-  }
-
-  initialize() {
-    console.log('PostDetector: Starting initialization');
-    this.addSaveButtonsToExistingPosts();
-    this.observeNewPosts();
   }
 
   addSaveButtonsToExistingPosts() {
@@ -93,32 +114,37 @@ class PostDetector {
       const allPosts = document.querySelectorAll(this.postSelectors.join(', '));
       console.log(`PostDetector: Total posts found: ${allPosts.length}`);
       
+      let processedCount = 0;
+      let skippedCount = 0;
+      
       allPosts.forEach((post, index) => {
         const postId = this.getPostId(post) || `fallback-${index}-${Date.now()}`;
         
         // Skip if already has button
         if (post.querySelector('.linkedin-post-saver-btn')) {
-          console.log(`PostDetector: Post ${index + 1} already has button`);
+          skippedCount++;
           return;
         }
         
         // Skip if already processed
         if (this.processedPosts.has(postId)) {
-          console.log(`PostDetector: Post ${index + 1} already processed`);
+          skippedCount++;
           return;
         }
         
         // Check if this post should be skipped
         if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
-          console.log(`PostDetector: Skipping post ${index + 1} - promoted or job update`);
           this.processedPosts.add(postId);
+          skippedCount++;
           return;
         }
         
-        console.log(`PostDetector: Processing new post ${index + 1}`, post);
         this.addSaveButtonToPost(post);
         this.processedPosts.add(postId);
+        processedCount++;
       });
+      
+      console.log(`PostDetector: Processed ${processedCount} posts, skipped ${skippedCount} posts`);
     } catch (error) {
       console.error('PostDetector: Error adding save buttons:', error);
     }
@@ -145,11 +171,8 @@ class PostDetector {
 
   addSaveButtonToPost(postElement) {
     try {
-      console.log('PostDetector: Adding save button to post', postElement);
-      
       // Double-check if this post should be skipped (redundant safety check)
       if (this.isPromotedPost(postElement) || this.isJobUpdate(postElement)) {
-        console.log('PostDetector: Skipping post - promoted or job update');
         return;
       }
       
@@ -168,7 +191,6 @@ class PostDetector {
       for (const selector of actionSelectors) {
         actionsBar = postElement.querySelector(selector);
         if (actionsBar) {
-          console.log(`PostDetector: Found actions bar with selector: ${selector}`);
           break;
         }
       }
@@ -181,11 +203,8 @@ class PostDetector {
         
         // Insert at the beginning of the actions bar for better alignment
         actionsBar.insertBefore(buttonContainer, actionsBar.firstChild);
-        console.log('PostDetector: Save button added successfully to actions bar');
       } else {
         // Fallback: add to a more reliable location within the post
-        console.log('PostDetector: No actions bar found, trying fallback locations');
-        
         const fallbackSelectors = [
           '.feed-shared-update-v2__description',
           '.feed-shared-text',
@@ -204,9 +223,6 @@ class PostDetector {
           buttonContainer.style.cssText = 'margin: 10px 0; text-align: right; border-top: 1px solid #e0e0e0; padding-top: 8px;';
           buttonContainer.appendChild(saveButton);
           fallbackLocation.parentNode.insertBefore(buttonContainer, fallbackLocation.nextSibling);
-          console.log('PostDetector: Save button added to fallback location');
-        } else {
-          console.log('PostDetector: No suitable location found for save button');
         }
       }
     } catch (error) {
@@ -227,7 +243,7 @@ class PostDetector {
         this.processNewPosts(mutations);
         // Also re-check existing posts periodically
         this.addSaveButtonsToExistingPosts();
-      }, 500); // Increased timeout for better performance
+      }, 800); // Increased timeout for better performance
     });
 
     observer.observe(document.body, {
@@ -260,7 +276,9 @@ class PostDetector {
 
     // Process unique posts only
     const uniquePosts = Array.from(new Set(newPosts));
-    console.log(`PostDetector: Processing ${uniquePosts.length} unique new posts`);
+    if (uniquePosts.length > 0) {
+      console.log(`PostDetector: Processing ${uniquePosts.length} unique new posts`);
+    }
     
     uniquePosts.forEach(post => {
       const postId = this.getPostId(post) || `new-${Date.now()}-${Math.random()}`;
@@ -277,12 +295,10 @@ class PostDetector {
       
       // Check if this post should be skipped
       if (this.isPromotedPost(post) || this.isJobUpdate(post)) {
-        console.log('PostDetector: Skipping new post - promoted or job update');
         this.processedPosts.add(postId);
         return;
       }
       
-      console.log('PostDetector: Adding button to new post', post);
       this.addSaveButtonToPost(post);
       this.processedPosts.add(postId);
     });

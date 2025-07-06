@@ -1,6 +1,8 @@
+
+// LinkedIn post selectors for the extension
 export const POST_SELECTORS = [
   'div[data-id*="urn:li:activity:"]',
-  'div[data-urn*="urn:li:activity:"]', 
+  'div[data-urn*="urn:li:activity:"]',
   '.feed-shared-update-v2',
   'article[data-urn]',
   '.feed-shared-update-v2__content',

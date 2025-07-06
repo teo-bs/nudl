@@ -1,14 +1,10 @@
+
+// Filter functions to determine which posts should be skipped
 export function isPromotedPost(postElement: Element): boolean {
-  // Check for sponsored/promoted attributes
-  if (postElement.querySelector('[data-sponsored]') || 
-      postElement.querySelector('[data-ad-choice]') ||
-      postElement.querySelector('[data-promoted]')) {
-    console.log('PostDetector: Found promoted post via attributes, skipping save button');
-    return true;
-  }
-  
-  // Fallback to text content check for older LinkedIn versions
+  // Check all text content in the post first
   const allText = postElement.textContent?.toLowerCase() || '';
+  
+  // Check for promoted/sponsored indicators
   if (allText.includes('promoted') || allText.includes('sponsored') || allText.includes('•promoted')) {
     console.log('PostDetector: Found promoted/sponsored text in post content, skipping save button');
     return true;
@@ -18,17 +14,10 @@ export function isPromotedPost(postElement: Element): boolean {
 }
 
 export function isJobPost(postElement: Element): boolean {
-  // Check for job-related attributes first
-  if (postElement.querySelector('[data-job-card]') ||
-      postElement.querySelector('[data-job-posting]') ||
-      postElement.querySelector('.job-posting') ||
-      postElement.querySelector('.hiring-card')) {
-    console.log('PostDetector: Found job posting elements, skipping save button');
-    return true;
-  }
-  
-  // Fallback to text content check
+  // Check for job update indicators
   const allText = postElement.textContent?.toLowerCase() || '';
+  
+  // Check for job-related keywords
   const jobKeywords = [
     'is hiring',
     'we\'re hiring',
@@ -47,6 +36,22 @@ export function isJobPost(postElement: Element): boolean {
   for (const keyword of jobKeywords) {
     if (allText.includes(keyword)) {
       console.log('PostDetector: Found job update keywords, skipping save button');
+      return true;
+    }
+  }
+  
+  // Check for job posting elements
+  const jobSelectors = [
+    '[data-test-id*="job"]',
+    '.job-posting',
+    '.hiring-card',
+    '[aria-label*="job"]',
+    '[aria-label*="hiring"]'
+  ];
+  
+  for (const selector of jobSelectors) {
+    if (postElement.querySelector(selector)) {
+      console.log('PostDetector: Found job posting elements, skipping save button');
       return true;
     }
   }

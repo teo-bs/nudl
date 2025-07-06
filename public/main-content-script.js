@@ -17,11 +17,7 @@
       console.log('LinkedIn Post Saver: Initializing extension...');
       
       // Wait for all required classes to be available
-      if (!window.PostDetector) {
-        console.log('LinkedIn Post Saver: Waiting for PostDetector to be available...');
-        setTimeout(init, 100);
-        return;
-      }
+      await waitForDependencies();
       
       // Wait for page to be ready
       if (document.readyState === 'loading') {
@@ -41,6 +37,24 @@
         init();
       }, 2000);
     }
+  }
+
+  async function waitForDependencies() {
+    const maxAttempts = 50;
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+      if (window.PostDetector && window.ButtonManager && window.StorageManager && window.NotificationManager && window.PostExtractor) {
+        console.log('LinkedIn Post Saver: All dependencies loaded');
+        return;
+      }
+      
+      console.log(`LinkedIn Post Saver: Waiting for dependencies... (${attempts + 1}/${maxAttempts})`);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    throw new Error('Dependencies not loaded after maximum attempts');
   }
 
   function initializeExtension() {
@@ -121,6 +135,15 @@
       ].join(', '));
       console.log('Manual check found', posts.length, 'posts');
       return posts;
+    },
+    getLoadedClasses: () => {
+      return {
+        PostDetector: !!window.PostDetector,
+        ButtonManager: !!window.ButtonManager,
+        StorageManager: !!window.StorageManager,
+        NotificationManager: !!window.NotificationManager,
+        PostExtractor: !!window.PostExtractor
+      };
     }
   };
 

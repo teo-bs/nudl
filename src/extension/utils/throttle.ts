@@ -1,4 +1,5 @@
 
+// Throttle utility function
 export function throttle<T extends (...args: any[]) => void>(
   func: T,
   delay: number
@@ -16,9 +17,11 @@ export function throttle<T extends (...args: any[]) => void>(
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
+      
       timeoutId = window.setTimeout(() => {
         func(...args);
         lastExecTime = Date.now();
+        timeoutId = null;
       }, delay - (currentTime - lastExecTime));
     }
   };

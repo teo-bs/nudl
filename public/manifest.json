@@ -18,8 +18,10 @@
     {
       "matches": ["https://www.linkedin.com/*"],
       "js": [
+        "post-extractor.js",
+        "notification-manager.js",
         "storage-manager.js",
-        "notification-manager.js", 
+        "button-manager.js",
         "post-detector.js",
         "main-content-script.js"
       ],
