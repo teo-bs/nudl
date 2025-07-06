@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import path from "path";
+import { copyFileSync } from "fs";
 
 export default defineConfig({
   build: {
@@ -18,6 +19,18 @@ export default defineConfig({
     },
     target: "es2020",
   },
+  plugins: [
+    {
+      name: 'copy-css',
+      generateBundle() {
+        // Copy CSS file to dist
+        copyFileSync(
+          path.resolve(__dirname, "src/extension/content-styles.css"),
+          path.resolve(__dirname, "dist/extension/content-styles.css")
+        );
+      }
+    }
+  ],
   esbuild: {
     target: "es2020",
   },
