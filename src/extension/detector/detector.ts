@@ -1,11 +1,11 @@
-
 import { POST_SELECTORS } from './selectors';
 import { isPromotedPost, isJobPost } from './filters';
 import { throttle } from '../utils/throttle';
+import { ButtonManager } from '../button-manager';
 
 export class PostDetector {
   private postSelectors: string[];
-  private buttonManager: any;
+  private buttonManager: ButtonManager;
   private processedPosts: Set<string>;
   private observerTimeout: number | null;
   private isInitialized: boolean;
@@ -16,13 +16,7 @@ export class PostDetector {
     this.observerTimeout = null;
     this.isInitialized = false;
     
-    // Ensure ButtonManager is available
-    if (!window.ButtonManager) {
-      console.error('PostDetector: ButtonManager not available');
-      return;
-    }
-    
-    this.buttonManager = new window.ButtonManager();
+    this.buttonManager = new ButtonManager();
     
     console.log('PostDetector initialized with enhanced selectors:', this.postSelectors.length, 'selectors');
   }
@@ -30,11 +24,6 @@ export class PostDetector {
   initialize() {
     if (this.isInitialized) {
       console.log('PostDetector: Already initialized, skipping');
-      return;
-    }
-    
-    if (!this.buttonManager) {
-      console.error('PostDetector: Cannot initialize without ButtonManager');
       return;
     }
     

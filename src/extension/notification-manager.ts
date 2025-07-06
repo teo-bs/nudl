@@ -1,50 +1,25 @@
-export type NotificationType = 'success' | 'error' | 'info';
 
 export class NotificationManager {
-  private static instance: NotificationManager;
-  private currentNotification: HTMLElement | null = null;
-
-  constructor() {
-    if (NotificationManager.instance) {
-      return NotificationManager.instance;
-    }
-    NotificationManager.instance = this;
-  }
-
-  show(message: string, type: NotificationType = 'info', duration: number = 3000): void {
-    // Remove existing notification if any
-    this.hide();
-
-    // Create notification element
+  show(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
     const notification = document.createElement('div');
     notification.className = `croi-notification ${type}`;
     notification.textContent = message;
-
-    // Add to document
+    
     document.body.appendChild(notification);
-    this.currentNotification = notification;
-
+    
     // Trigger show animation
     setTimeout(() => {
       notification.classList.add('show');
     }, 10);
-
-    // Auto-hide after duration
+    
+    // Auto remove after 3 seconds
     setTimeout(() => {
-      this.hide();
-    }, duration);
-  }
-
-  hide(): void {
-    if (this.currentNotification) {
-      this.currentNotification.classList.remove('show');
-      
+      notification.classList.remove('show');
       setTimeout(() => {
-        if (this.currentNotification && this.currentNotification.parentNode) {
-          this.currentNotification.parentNode.removeChild(this.currentNotification);
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
         }
-        this.currentNotification = null;
       }, 300);
-    }
+    }, 3000);
   }
 }

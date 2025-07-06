@@ -1,84 +1,57 @@
 
-import type { PostData } from './post-extractor';
+interface PostData {
+  content: string;
+  author_name?: string;
+  author_profile_url?: string;
+  author_avatar_url?: string;
+  post_url: string;
+  post_date?: string;
+  linkedin_post_id?: string;
+}
 
 export class StorageManager {
-  async savePost(postData: PostData): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!chrome.runtime || !chrome.runtime.sendMessage) {
-        reject(new Error('Chrome runtime not available'));
-        return;
-      }
-
-      console.log('StorageManager: Sending save post message to service worker');
-
-      chrome.runtime.sendMessage(
-        { action: 'savePost', postData },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.error('StorageManager: Chrome runtime error:', chrome.runtime.lastError.message);
-            reject(new Error(chrome.runtime.lastError.message));
-            return;
-          }
-          
-          if (response && response.success) {
-            console.log('StorageManager: Post saved successfully:', response.post);
-            resolve(response.post);
-          } else {
-            console.error('StorageManager: Failed to save post:', response?.error);
-            reject(new Error(response?.error || 'Failed to save post'));
-          }
-        }
+  async savePost(postData: PostData): Promise<void> {
+    try {
+      // Check if post already exists
+      const existingPosts = await this.getSavedPosts();
+      const isDuplicate = existingPosts.some(post => 
+        post.linkedin_post_id === postData.linkedin_post_id ||
+        post.post_url === postData.post_url ||
+        (post.content === postData.content && post.author_name === postData.author_name)
       );
-    });
+      
+      if (isDuplicate) {
+        throw new Error('Post already saved');
+      }
+      
+      // Create post object with timestamp
+      const postToSave = {
+        ...postData,
+        id: Date.now().toString(),
+        saved_at: new Date().toISOString()
+      };
+      
+      // Save to Chrome storage
+      const result = await chrome.storage.local.get(['savedPosts']);
+      const savedPosts = result.savedPosts || [];
+      savedPosts.unshift(postToSave);
+      
+      await chrome.storage.local.set({ savedPosts });
+      
+      console.log('StorageManager: Post saved successfully');
+    } catch (error) {
+      console.error('StorageManager: Error saving post:', error);
+      throw error;
+    }
   }
-
+  
   async getSavedPosts(): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      if (!chrome.runtime || !chrome.runtime.sendMessage) {
-        reject(new Error('Chrome runtime not available'));
-        return;
-      }
-
-      chrome.runtime.sendMessage(
-        { action: 'getSavedPosts' },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-            return;
-          }
-          
-          if (response && response.success) {
-            resolve(response.posts || []);
-          } else {
-            reject(new Error(response?.error || 'Failed to get saved posts'));
-          }
-        }
-      );
-    });
-  }
-
-  async syncWithBackend(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!chrome.runtime || !chrome.runtime.sendMessage) {
-        reject(new Error('Chrome runtime not available'));
-        return;
-      }
-
-      chrome.runtime.sendMessage(
-        { action: 'syncWithBackend' },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-            return;
-          }
-          
-          if (response && response.success) {
-            resolve(response);
-          } else {
-            reject(new Error(response?.error || 'Failed to sync with backend'));
-          }
-        }
-      );
-    });
+    try {
+      const result = await chrome.storage.local.get(['savedPosts']);
+      return result.savedPosts || [];
+    } catch (error) {
+      console.error('StorageManager: Error getting saved posts:', error);
+      return [];
+    }
   }
 }
