@@ -1,9 +1,10 @@
+
 // LinkedIn Post Saver - Main Content Script
 (() => {
   console.log('LinkedIn Post Saver: Starting main content script...');
 
   // Main execution
-  let extensionInitializer;
+  let postDetector;
 
   console.log('LinkedIn Post Saver: Current URL:', window.location.href);
   console.log('LinkedIn Post Saver: Chrome runtime available:', !!chrome.runtime);
@@ -14,8 +15,16 @@
   async function init() {
     try {
       console.log('LinkedIn Post Saver: Initializing extension...');
-      extensionInitializer = new ExtensionInitializer();
-      await extensionInitializer.init();
+      
+      // Wait for page to be ready
+      if (document.readyState === 'loading') {
+        console.log('LinkedIn Post Saver: Waiting for DOM to load...');
+        document.addEventListener('DOMContentLoaded', () => initializeExtension());
+      } else {
+        console.log('LinkedIn Post Saver: DOM already loaded, initializing...');
+        initializeExtension();
+      }
+      
       console.log('LinkedIn Post Saver: Extension initialized successfully');
     } catch (error) {
       console.error('LinkedIn Post Saver: Failed to initialize extension:', error);
@@ -24,6 +33,24 @@
         console.log('LinkedIn Post Saver: Retrying initialization...');
         init();
       }, 2000);
+    }
+  }
+
+  function initializeExtension() {
+    try {
+      console.log('LinkedIn Post Saver: Starting extension initialization');
+      
+      postDetector = new PostDetector();
+      postDetector.initialize();
+      console.log('LinkedIn Post Saver: PostDetector initialized successfully');
+      
+    } catch (error) {
+      console.error('LinkedIn Post Saver: PostDetector initialization error:', error);
+      // Retry after delay if PostDetector is not available yet
+      setTimeout(() => {
+        console.log('LinkedIn Post Saver: Retrying PostDetector initialization...');
+        initializeExtension();
+      }, 1000);
     }
   }
 
@@ -44,9 +71,19 @@
     }
     
     if (request.action === 'toggleExtension') {
-      if (extensionInitializer) {
-        const active = extensionInitializer.toggleExtension();
-        sendResponse({ active });
+      if (postDetector) {
+        // Toggle button visibility
+        const buttons = document.querySelectorAll('.linkedin-post-saver-btn');
+        console.log('LinkedIn Post Saver: Found', buttons.length, 'buttons to toggle');
+        
+        const isActive = !buttons.length || buttons[0].style.display !== 'none';
+        const newState = !isActive;
+        
+        buttons.forEach(btn => {
+          btn.style.display = newState ? 'flex' : 'none';
+        });
+        
+        sendResponse({ active: newState });
       } else {
         sendResponse({ active: false });
       }
