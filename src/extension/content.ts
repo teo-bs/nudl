@@ -184,17 +184,17 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
       const isActive = document.querySelectorAll('.croi-btn').length > 0;
       
       if (isActive) {
-        // Hide buttons
+        // Hide buttons - cast to HTMLElement to access style property
         document.querySelectorAll('.croi-btn').forEach(btn => {
-          btn.style.display = 'none';
+          (btn as HTMLElement).style.display = 'none';
         });
         sendResponse({ success: true, active: false });
       } else {
-        // Show buttons or reinitialize
+        // Show buttons or reinitialize - cast to HTMLElement to access style property
         const hiddenButtons = document.querySelectorAll('.croi-btn[style*="display: none"]');
         if (hiddenButtons.length > 0) {
           hiddenButtons.forEach(btn => {
-            btn.style.display = 'inline-flex';
+            (btn as HTMLElement).style.display = 'inline-flex';
           });
         } else if (postDetector) {
           // Reinitialize if no buttons found
