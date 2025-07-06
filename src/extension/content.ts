@@ -3,6 +3,9 @@
 import { PostDetector } from './detector/detector';
 import { StorageManager } from './storage-manager';
 import { NotificationManager } from './notification-manager';
+import { SessionBridge } from './utils/session-bridge';
+import { waitForCondition } from './utils/polling';
+import type { ExtensionMessage, ExtensionResponse } from './types';
 
 // Global state
 let postDetector: PostDetector | null = null;
@@ -145,9 +148,27 @@ async function initialize() {
       return;
     }
     
+    // Wait for LinkedIn to load
+    const linkedinReady = await waitForCondition(
+      () => document.querySelector('.feed-shared-update-v2') !== null,
+      10000
+    );
+    
+    if (!linkedinReady) {
+      console.log('Croi Extension: LinkedIn content not ready, retrying...');
+      setTimeout(() => {
+        isInitialized = false;
+        initialize();
+      }, 3000);
+      return;
+    }
+    
     // Initialize post detector
     postDetector = new PostDetector();
     postDetector.initialize();
+    
+    // Sync session with web app
+    await SessionBridge.syncWithWebApp();
     
     isInitialized = true;
     console.log('Croi Extension: Successfully initialized');
@@ -169,14 +190,20 @@ async function initialize() {
 }
 
 // Handle messages from popup and background
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (request: ExtensionMessage, sender, sendResponse) => {
   console.log('Croi Extension: Received message:', request);
   
   try {
     if (request.action === 'getSavedPosts') {
       const storageManager = new StorageManager();
       const posts = await storageManager.getSavedPosts();
-      sendResponse({ success: true, posts });
+      sendResponse({ success: true, posts } as ExtensionResponse);
+      return true;
+    }
+    
+    if (request.action === 'getSession') {
+      const session = await SessionBridge.getSession();
+      sendResponse({ success: true, session });
       return true;
     }
     
@@ -188,7 +215,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         document.querySelectorAll('.croi-btn').forEach(btn => {
           (btn as HTMLElement).style.display = 'none';
         });
-        sendResponse({ success: true, active: false });
+        sendResponse({ success: true, active: false } as ExtensionResponse);
       } else {
         // Show buttons or reinitialize - cast to HTMLElement to access style property
         const hiddenButtons = document.querySelectorAll('.croi-btn[style*="display: none"]');
@@ -200,7 +227,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
           // Reinitialize if no buttons found
           postDetector.initialize();
         }
-        sendResponse({ success: true, active: true });
+        sendResponse({ success: true, active: true } as ExtensionResponse);
       }
       return true;
     }
@@ -208,13 +235,14 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === 'reinitialize') {
       isInitialized = false;
       await initialize();
-      sendResponse({ success: true });
+      sendResponse({ success: true } as ExtensionResponse);
       return true;
     }
     
   } catch (error) {
     console.error('Croi Extension: Message handler error:', error);
-    sendResponse({ success: false, error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    sendResponse({ success: false, error: errorMessage } as ExtensionResponse);
   }
 });
 

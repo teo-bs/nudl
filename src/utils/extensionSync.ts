@@ -9,6 +9,8 @@ interface ExtensionPostData {
   linkedin_post_id: string;
   post_date: string;
   title: string;
+  author_profile_url?: string;
+  notes?: string;
 }
 
 export function initializeExtensionSync() {
@@ -54,6 +56,21 @@ export function initializeExtensionSync() {
             user: null 
           }, '*');
         }
+      } else if (event.data.action === 'getSession') {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          console.log('Sending session to extension:', session);
+          window.postMessage({ 
+            action: 'getSessionResponse', 
+            session: session 
+          }, '*');
+        } catch (error) {
+          console.error('Error getting session:', error);
+          window.postMessage({ 
+            action: 'getSessionResponse', 
+            session: null 
+          }, '*');
+        }
       }
     });
 
@@ -78,10 +95,34 @@ export function initializeExtensionSync() {
             console.error('Error getting user details:', error);
             sendResponse({ success: false, user: null });
           }
+        } else if (message.action === 'getSession') {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            sendResponse({ success: true, session: session });
+          } catch (error) {
+            console.error('Error getting session:', error);
+            sendResponse({ success: false, session: null });
+          }
         }
         return true; // Keep the message channel open for async response
       });
     }
+
+    // Auto-sync session periodically
+    setInterval(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Broadcast session to any listening extensions
+          window.postMessage({
+            action: 'sessionUpdate',
+            session: session
+          }, '*');
+        }
+      } catch (error) {
+        console.log('Session sync error:', error);
+      }
+    }, 30000); // Every 30 seconds
   }
 }
 
@@ -120,9 +161,11 @@ async function savePostToDatabase(postData: ExtensionPostData) {
       title: postData.title,
       author_name: postData.author_name,
       author_avatar_url: postData.author_avatar_url,
+      author_profile_url: postData.author_profile_url,
       post_url: postData.post_url,
       linkedin_post_id: postData.linkedin_post_id,
       post_date: postData.post_date,
+      notes: postData.notes,
       saved_at: new Date().toISOString(),
       is_favorite: false,
       read_status: false,
