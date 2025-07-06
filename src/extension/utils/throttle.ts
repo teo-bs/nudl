@@ -1,6 +1,6 @@
 
-// Throttle utility function
-export function throttle<T extends (...args: any[]) => void>(
+// Throttle utility for performance optimization
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -10,7 +10,7 @@ export function throttle<T extends (...args: any[]) => void>(
   return (...args: Parameters<T>) => {
     const currentTime = Date.now();
     
-    if (currentTime - lastExecTime > delay) {
+    if (currentTime - lastExecTime >= delay) {
       func(...args);
       lastExecTime = currentTime;
     } else {
@@ -24,5 +24,23 @@ export function throttle<T extends (...args: any[]) => void>(
         timeoutId = null;
       }, delay - (currentTime - lastExecTime));
     }
+  };
+}
+
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: number | null = null;
+  
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    
+    timeoutId = window.setTimeout(() => {
+      func(...args);
+      timeoutId = null;
+    }, delay);
   };
 }

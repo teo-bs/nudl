@@ -1,20 +1,45 @@
 
-// Filter functions to determine which posts should be skipped
+// Enhanced filtering logic for posts
 export function isPromotedPost(postElement: Element): boolean {
-  // Check all text content in the post first
   const allText = postElement.textContent?.toLowerCase() || '';
   
-  // Check for promoted/sponsored indicators
-  if (allText.includes('promoted') || allText.includes('sponsored') || allText.includes('•promoted')) {
-    console.log('PostDetector: Found promoted/sponsored text in post content, skipping save button');
-    return true;
+  // Check for promoted/sponsored indicators in text
+  const promotedKeywords = [
+    'promoted',
+    'sponsored', 
+    '•promoted',
+    '• promoted',
+    'ad ',
+    ' ad•',
+    'gesponsord', // German
+    'promovido', // Spanish/Portuguese
+    'sponsorisé' // French
+  ];
+  
+  for (const keyword of promotedKeywords) {
+    if (allText.includes(keyword)) {
+      return true;
+    }
+  }
+  
+  // Check for promoted indicators in attributes
+  const promotedSelectors = [
+    '[data-test-id*="promoted"]',
+    '[aria-label*="Promoted"]',
+    '[aria-label*="Sponsored"]',
+    '.feed-shared-actor__sub-description:contains("Promoted")'
+  ];
+  
+  for (const selector of promotedSelectors) {
+    if (postElement.querySelector(selector)) {
+      return true;
+    }
   }
   
   return false;
 }
 
 export function isJobPost(postElement: Element): boolean {
-  // Check for job update indicators
   const allText = postElement.textContent?.toLowerCase() || '';
   
   // Check for job-related keywords
@@ -30,12 +55,17 @@ export function isJobPost(postElement: Element): boolean {
     'job opening',
     'hiring for',
     'looking for a',
-    'posted a job'
+    'posted a job',
+    'join us',
+    'we are looking for',
+    'remote job',
+    'full-time',
+    'part-time',
+    'contract position'
   ];
   
   for (const keyword of jobKeywords) {
     if (allText.includes(keyword)) {
-      console.log('PostDetector: Found job update keywords, skipping save button');
       return true;
     }
   }
@@ -46,12 +76,31 @@ export function isJobPost(postElement: Element): boolean {
     '.job-posting',
     '.hiring-card',
     '[aria-label*="job"]',
-    '[aria-label*="hiring"]'
+    '[aria-label*="hiring"]',
+    '.job-card'
   ];
   
   for (const selector of jobSelectors) {
     if (postElement.querySelector(selector)) {
-      console.log('PostDetector: Found job posting elements, skipping save button');
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+export function hasValidContent(postElement: Element): boolean {
+  // Check if post has meaningful content
+  const contentSelectors = [
+    '.feed-shared-update-v2__description',
+    '.feed-shared-text',
+    '.update-components-text',
+    '.feed-shared-update-v2__commentary'
+  ];
+  
+  for (const selector of contentSelectors) {
+    const contentEl = postElement.querySelector(selector);
+    if (contentEl && contentEl.textContent?.trim().length > 10) {
       return true;
     }
   }
