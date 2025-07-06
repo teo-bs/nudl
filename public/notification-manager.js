@@ -1,3 +1,4 @@
+
 // Notification Manager Class
 class NotificationManager {
   show(message, type = 'info') {

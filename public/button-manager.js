@@ -1,9 +1,10 @@
+
 // Button Manager Class
 class ButtonManager {
   constructor() {
-    this.storageManager = new StorageManager();
-    this.notificationManager = new NotificationManager();
-    this.postExtractor = new PostExtractor();
+    this.storageManager = new window.StorageManager();
+    this.notificationManager = new window.NotificationManager();
+    this.postExtractor = new window.PostExtractor();
   }
 
   createSaveButton() {

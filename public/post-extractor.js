@@ -1,3 +1,4 @@
+
 // Post Extractor Class
 class PostExtractor {
   extractPostData(postElement) {

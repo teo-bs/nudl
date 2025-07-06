@@ -1,3 +1,4 @@
+
 // Post Detector Class
 class PostDetector {
   constructor() {
@@ -14,7 +15,7 @@ class PostDetector {
       '.update-components-update-v2',
       '.feed-shared-post'
     ];
-    this.buttonManager = new ButtonManager();
+    this.buttonManager = new window.ButtonManager();
     this.processedPosts = new Set();
     this.observerTimeout = null;
     console.log('PostDetector initialized with enhanced selectors:', this.postSelectors);

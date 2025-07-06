@@ -16,6 +16,13 @@
     try {
       console.log('LinkedIn Post Saver: Initializing extension...');
       
+      // Wait for all required classes to be available
+      if (!window.PostDetector) {
+        console.log('LinkedIn Post Saver: Waiting for PostDetector to be available...');
+        setTimeout(init, 100);
+        return;
+      }
+      
       // Wait for page to be ready
       if (document.readyState === 'loading') {
         console.log('LinkedIn Post Saver: Waiting for DOM to load...');
@@ -40,7 +47,13 @@
     try {
       console.log('LinkedIn Post Saver: Starting extension initialization');
       
-      postDetector = new PostDetector();
+      if (!window.PostDetector) {
+        console.error('LinkedIn Post Saver: PostDetector class not available');
+        setTimeout(initializeExtension, 500);
+        return;
+      }
+      
+      postDetector = new window.PostDetector();
       postDetector.initialize();
       console.log('LinkedIn Post Saver: PostDetector initialized successfully');
       
@@ -60,7 +73,13 @@
     
     if (request.action === 'getSavedPosts') {
       try {
-        const storageManager = new StorageManager();
+        if (!window.StorageManager) {
+          console.error('LinkedIn Post Saver: StorageManager not available');
+          sendResponse({ posts: [] });
+          return;
+        }
+        
+        const storageManager = new window.StorageManager();
         const posts = await storageManager.getSavedPosts();
         sendResponse({ posts });
       } catch (error) {
