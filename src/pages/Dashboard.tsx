@@ -1,3 +1,4 @@
+
 import { Header } from '@/components/layout/Header';
 import { Dashboard as DashboardComponent } from '@/components/dashboard/Dashboard';
 
