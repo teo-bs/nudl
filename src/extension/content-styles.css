@@ -1,68 +1,113 @@
 
 /* Croi LinkedIn Extension Styles - Spotify Branded */
 .croi-btn-container {
-  @apply inline-flex mr-2;
+  display: inline-flex !important;
+  align-items: center;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .croi-btn-container.croi-btn-fallback {
-  @apply my-2 text-right border-t border-[hsl(var(--border))] pt-2;
+  margin: 10px 0;
+  text-align: right;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
 }
 
 .croi-btn {
-  @apply flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-black transition-all duration-300 cursor-pointer relative z-10;
-  background: linear-gradient(135deg, hsl(var(--spotify-green)) 0%, hsl(141 76% 42%) 100%);
-  border: none;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%) !important;
+  border: none !important;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000 !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 4px 20px rgba(29, 185, 84, 0.3),
+    0 2px 8px rgba(29, 185, 84, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  z-index: 1000;
+  position: relative;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  min-width: 80px;
+  justify-content: center;
 }
 
-.croi-btn:hover {
-  transform: scale(1.05);
+.croi-btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
   box-shadow: 
-    0 8px 30px rgba(29, 185, 84, 0.4),
+    0 4px 12px rgba(29, 185, 84, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  filter: brightness(1.1);
+  filter: brightness(1.05);
 }
 
 .croi-btn:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
   transition-duration: 0.1s;
 }
 
 .croi-btn.saved {
-  @apply bg-green-500 border-green-500 text-white;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
 }
 
 .croi-btn.saved:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
 }
 
 .croi-btn:disabled {
-  @apply opacity-70 cursor-not-allowed;
+  opacity: 0.7;
+  cursor: not-allowed;
   transform: none;
 }
 
+.croi-btn.error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: #ffffff !important;
+}
+
 .croi-spinner {
-  @apply w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: croi-spin 1s linear infinite;
+}
+
+@keyframes croi-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Spotify-style notification styles */
 .croi-notification {
-  @apply fixed top-5 right-5 px-6 py-4 rounded-lg font-bold z-50 max-w-xs transition-all duration-300;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 10000;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 320px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   border: 1px solid rgba(29, 185, 84, 0.3);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  opacity: 0;
-  transform: translateX(100%);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.025em;
+  color: #ffffff;
 }
 
 .croi-notification.show {
@@ -71,7 +116,7 @@
 }
 
 .croi-notification.success {
-  color: hsl(var(--spotify-green));
+  color: #1db954;
   border-color: rgba(29, 185, 84, 0.5);
 }
 
@@ -85,28 +130,47 @@
   border-color: rgba(59, 130, 246, 0.5);
 }
 
-/* Ensure proper alignment in action bars */
+/* Ensure proper alignment in LinkedIn's action bars */
 .feed-shared-social-action-bar .croi-btn-container {
-  @apply inline-flex items-center mr-3;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-right: 12px !important;
   order: -1;
 }
 
 .social-actions-bar .croi-btn-container {
-  @apply inline-flex items-center mr-3;
-}
-
-.croi-btn-container {
-  @apply inline-flex items-center;
-  vertical-align: middle;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-right: 12px !important;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .croi-btn {
-    @apply px-3 py-1.5 text-xs gap-1;
+    padding: 6px 12px;
+    font-size: 12px;
+    gap: 4px;
   }
   
   .croi-notification {
-    @apply right-2 top-2 max-w-[calc(100vw-1rem)];
+    right: 10px;
+    top: 10px;
+    max-width: calc(100vw - 20px);
+    font-size: 13px;
+    padding: 12px 16px;
   }
+}
+
+/* Ensure button doesn't interfere with LinkedIn's layout */
+.croi-btn-container {
+  flex-shrink: 0;
+}
+
+/* Fix for LinkedIn's specific layout issues */
+.feed-shared-update-v2 .croi-btn-container {
+  display: inline-flex !important;
+}
+
+.update-components-footer .croi-btn-container {
+  display: inline-flex !important;
 }

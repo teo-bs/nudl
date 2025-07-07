@@ -1,51 +1,61 @@
-// Dashboard Content Script - Handles communication between extension and web app
-console.log('Dashboard content script loaded');
 
-// Listen for messages from the extension background script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Dashboard content script received message:', message);
+// Dashboard content script for syncing with extension
+console.log('Croi Dashboard: Content script loaded');
+
+// Listen for messages from the Chrome extension
+window.addEventListener('message', async (event) => {
+  if (event.origin !== window.location.origin) return;
   
-  if (message.action === 'savePostToDatabase') {
-    // Forward the message to the web app via window messaging
-    window.postMessage({
-      action: 'savePostToDatabase',
-      postData: message.postData
-    }, '*');
+  if (event.data.action === 'savePostToDatabase') {
+    console.log('Croi Dashboard: Received save post request:', event.data.postData);
     
-    // Send immediate response
-    sendResponse({ success: true, message: 'Message forwarded to web app' });
-    return true; // Keep the channel open for async response
-  }
-  
-  if (message.action === 'getUserDetails') {
-    // Forward the message to the web app
-    window.postMessage({
-      action: 'getUserDetails'
-    }, '*');
-    
-    // Listen for response from web app
-    const responseHandler = (event) => {
-      if (event.data.action === 'getUserDetailsResponse') {
-        window.removeEventListener('message', responseHandler);
-        sendResponse({ success: true, user: event.data.user });
+    // Get the Supabase client from the global scope
+    if (window.supabase && window.supabaseAuth) {
+      try {
+        const { data: { user } } = await window.supabaseAuth.getUser();
+        
+        if (!user) {
+          console.log('Croi Dashboard: User not authenticated');
+          return;
+        }
+        
+        const postData = {
+          ...event.data.postData,
+          user_id: user.id,
+          saved_at: new Date().toISOString(),
+          is_favorite: false,
+          read_status: false,
+          status: 'active'
+        };
+        
+        const { error } = await window.supabase
+          .from('saved_posts')
+          .insert(postData);
+        
+        if (error) {
+          console.error('Croi Dashboard: Error saving post:', error);
+        } else {
+          console.log('Croi Dashboard: Post saved successfully');
+          
+          // Trigger a refresh of the dashboard if needed
+          window.dispatchEvent(new CustomEvent('croi-post-saved', {
+            detail: postData
+          }));
+        }
+      } catch (error) {
+        console.error('Croi Dashboard: Error in save handler:', error);
       }
-    };
-    
-    window.addEventListener('message', responseHandler);
-    
-    // Timeout after 5 seconds
-    setTimeout(() => {
-      window.removeEventListener('message', responseHandler);
-      sendResponse({ success: false, user: null });
-    }, 5000);
-    
-    return true; // Keep the channel open for async response
+    }
   }
 });
 
-// Listen for responses from the web app and forward them back to extension
-window.addEventListener('message', (event) => {
-  if (event.data.action === 'savePostResponse') {
-    console.log('Dashboard content script: Received save response from web app:', event.data);
-  }
-});
+// Make Supabase client available globally for extension communication
+if (typeof window !== 'undefined') {
+  // This will be set by the main app
+  window.croiDashboard = {
+    savePost: async (postData) => {
+      console.log('Croi Dashboard: Direct save post request:', postData);
+      // Implementation will be added by the main app
+    }
+  };
+}

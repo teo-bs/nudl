@@ -1,46 +1,15 @@
 
-// Throttle utility for performance optimization
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: any[]) => void>(
   func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: number | null = null;
-  let lastExecTime = 0;
+  limit: number
+): T {
+  let inThrottle: boolean;
   
-  return (...args: Parameters<T>) => {
-    const currentTime = Date.now();
-    
-    if (currentTime - lastExecTime >= delay) {
-      func(...args);
-      lastExecTime = currentTime;
-    } else {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      
-      timeoutId = window.setTimeout(() => {
-        func(...args);
-        lastExecTime = Date.now();
-        timeoutId = null;
-      }, delay - (currentTime - lastExecTime));
+  return ((...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
     }
-  };
-}
-
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: number | null = null;
-  
-  return (...args: Parameters<T>) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    
-    timeoutId = window.setTimeout(() => {
-      func(...args);
-      timeoutId = null;
-    }, delay);
-  };
+  }) as T;
 }
