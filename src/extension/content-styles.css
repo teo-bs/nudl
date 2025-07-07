@@ -1,52 +1,68 @@
-/* Croi LinkedIn Extension Styles */
+
+/* Croi LinkedIn Extension Styles - Spotify Branded */
 .croi-btn-container {
   @apply inline-flex mr-2;
 }
 
 .croi-btn-container.croi-btn-fallback {
-  @apply my-2 text-right border-t border-gray-200 pt-2;
+  @apply my-2 text-right border-t border-[hsl(var(--border))] pt-2;
 }
 
 .croi-btn {
-  @apply flex items-center gap-1 bg-white/10 backdrop-blur-md rounded-full px-3 py-1 text-sm text-white transition-all duration-200 cursor-pointer relative z-10;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  @apply flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-black transition-all duration-300 cursor-pointer relative z-10;
+  background: linear-gradient(135deg, hsl(var(--spotify-green)) 0%, hsl(141 76% 42%) 100%);
+  border: none;
+  box-shadow: 
+    0 4px 20px rgba(29, 185, 84, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .croi-btn:hover {
-  @apply bg-white/20 ring-2;
-  background-color: #FF7A59;
-  border-color: #FF7A59;
-  ring-color: rgba(255, 122, 89, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+  box-shadow: 
+    0 8px 30px rgba(29, 185, 84, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  filter: brightness(1.1);
 }
 
 .croi-btn:active {
-  transform: translateY(0);
+  transform: scale(0.98);
+  transition-duration: 0.1s;
 }
 
 .croi-btn.saved {
   @apply bg-green-500 border-green-500 text-white;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .croi-btn.saved:hover {
-  @apply bg-green-600 border-green-600;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
 .croi-btn:disabled {
   @apply opacity-70 cursor-not-allowed;
+  transform: none;
 }
 
 .croi-spinner {
   @apply w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
 }
 
-/* Notification styles */
+/* Spotify-style notification styles */
 .croi-notification {
-  @apply fixed top-5 right-5 px-5 py-3 rounded-lg font-medium z-50 max-w-xs shadow-lg transition-all duration-300;
+  @apply fixed top-5 right-5 px-6 py-4 rounded-lg font-bold z-50 max-w-xs transition-all duration-300;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   opacity: 0;
   transform: translateX(100%);
+  letter-spacing: 0.05em;
 }
 
 .croi-notification.show {
@@ -55,15 +71,18 @@
 }
 
 .croi-notification.success {
-  @apply bg-green-500 text-white;
+  color: hsl(var(--spotify-green));
+  border-color: rgba(29, 185, 84, 0.5);
 }
 
 .croi-notification.error {
-  @apply bg-red-500 text-white;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .croi-notification.info {
-  @apply bg-blue-500 text-white;
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Ensure proper alignment in action bars */
@@ -84,7 +103,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .croi-btn {
-    @apply px-2 py-1 text-xs gap-1;
+    @apply px-3 py-1.5 text-xs gap-1;
   }
   
   .croi-notification {

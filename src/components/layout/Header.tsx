@@ -29,10 +29,10 @@ export const Header = () => {
   };
 
   return (
-    <header className="bg-background border-b border-border px-4 py-3 shadow-sm">
+    <header className="bg-background border-b border-border px-4 py-3 shadow-sm glass">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground text-spotify-glow">
             Croi
           </h1>
         </div>
@@ -41,10 +41,10 @@ export const Header = () => {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-[hsl(var(--spotify-green))] text-black font-bold">
                       {user.user_metadata?.full_name 
                         ? getInitials(user.user_metadata.full_name)
                         : user.email?.charAt(0).toUpperCase()
@@ -53,7 +53,7 @@ export const Header = () => {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56 glass-card" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
@@ -65,16 +65,16 @@ export const Header = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-accent">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-accent">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOut} className="hover:bg-accent text-red-400">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

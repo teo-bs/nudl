@@ -55,50 +55,50 @@ export const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground text-spotify-glow">Dashboard</h1>
           <p className="text-muted-foreground">Manage your saved LinkedIn posts and tags</p>
         </div>
-        <Button onClick={() => setIsAddPostModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button variant="spotify" size="xl" onClick={() => setIsAddPostModalOpen(true)}>
+          <Plus className="w-5 h-5 mr-2" />
           Add Post
         </Button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <BookOpen className="h-4 w-4 text-[hsl(var(--spotify-green))]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalPosts || 0}</div>
+            <div className="text-2xl font-bold text-spotify-glow">{stats?.totalPosts || 0}</div>
             <p className="text-xs text-muted-foreground">
               LinkedIn posts saved
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tags</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
+            <Tag className="h-4 w-4 text-[hsl(var(--spotify-green))]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalTags || 0}</div>
+            <div className="text-2xl font-bold text-spotify-glow">{stats?.totalTags || 0}</div>
             <p className="text-xs text-muted-foreground">
               Organization tags created
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Favorites</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
+            <Heart className="h-4 w-4 text-[hsl(var(--spotify-green))]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalFavorites || 0}</div>
+            <div className="text-2xl font-bold text-spotify-glow">{stats?.totalFavorites || 0}</div>
             <p className="text-xs text-muted-foreground">
               Posts marked as favorites
             </p>
@@ -107,10 +107,10 @@ export const Dashboard = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="posts">Saved Posts</TabsTrigger>
-          <TabsTrigger value="tags">Tags</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 glass">
+          <TabsTrigger value="posts" className="font-semibold">Saved Posts</TabsTrigger>
+          <TabsTrigger value="tags" className="font-semibold">Tags</TabsTrigger>
         </TabsList>
         
         <TabsContent value="posts" className="mt-6">

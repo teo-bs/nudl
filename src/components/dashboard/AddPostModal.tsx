@@ -42,7 +42,7 @@ export const AddPostModal = ({ isOpen, onClose, onSuccess }: AddPostModalProps) 
       if (error) throw error;
 
       toast({
-        title: "Post saved successfully!",
+        title: "Post saved successfully! 🎉",
         description: "Your LinkedIn post has been added to your collection.",
       });
 
@@ -62,61 +62,65 @@ export const AddPostModal = ({ isOpen, onClose, onSuccess }: AddPostModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl glass-card">
         <DialogHeader>
-          <DialogTitle>Add New Post</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-spotify-glow">Add New Post</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="post_url">LinkedIn Post URL *</Label>
+            <Label htmlFor="post_url" className="text-sm font-medium">LinkedIn Post URL *</Label>
             <Input
               id="post_url"
               type="url"
               value={formData.post_url}
               onChange={(e) => setFormData(prev => ({ ...prev, post_url: e.target.value }))}
               placeholder="https://linkedin.com/posts/..."
+              className="mt-1"
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="author_name">Author Name</Label>
+            <Label htmlFor="author_name" className="text-sm font-medium">Author Name</Label>
             <Input
               id="author_name"
               value={formData.author_name}
               onChange={(e) => setFormData(prev => ({ ...prev, author_name: e.target.value }))}
               placeholder="John Doe"
+              className="mt-1"
             />
           </div>
 
           <div>
-            <Label htmlFor="title">Post Title (Optional)</Label>
+            <Label htmlFor="title" className="text-sm font-medium">Post Title (Optional)</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Brief title for the post"
+              className="mt-1"
             />
           </div>
 
           <div>
-            <Label htmlFor="content">Post Content *</Label>
+            <Label htmlFor="content" className="text-sm font-medium">Post Content *</Label>
             <Textarea
               id="content"
               value={formData.content}
               onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
               placeholder="Paste the LinkedIn post content here..."
+              className="mt-1"
               rows={6}
               required
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button type="button" variant="glass" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" variant="spotify" disabled={isLoading}>
               {isLoading ? 'Saving...' : 'Save Post'}
             </Button>
           </div>

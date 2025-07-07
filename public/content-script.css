@@ -1,5 +1,5 @@
 
-/* LinkedIn Post Saver Styles */
+/* LinkedIn Post Saver Styles - Spotify Branded */
 .linkedin-post-saver-container {
   display: inline-flex;
   margin-right: 8px;
@@ -8,55 +8,58 @@
 .linkedin-post-saver-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #e1e5e9;
-  border-radius: 16px;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+  border: none;
+  border-radius: 50px;
   font-size: 14px;
-  font-weight: 500;
-  color: #666;
+  font-weight: 700;
+  color: black;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 20px rgba(29, 185, 84, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   z-index: 1000;
   position: relative;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .linkedin-post-saver-btn:hover {
-  background: rgba(255, 255, 255, 1);
-  border-color: #0a66c2;
-  color: #0a66c2;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+  box-shadow: 
+    0 8px 30px rgba(29, 185, 84, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  filter: brightness(1.1);
 }
 
 .linkedin-post-saver-btn:active {
-  transform: translateY(0);
+  transform: scale(0.98);
+  transition-duration: 0.1s;
 }
 
 .linkedin-post-saver-btn.saved {
-  background: #10b981;
-  border-color: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
 }
 
 .linkedin-post-saver-btn.saved:hover {
-  background: #059669;
-  border-color: #059669;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
 .linkedin-post-saver-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
 }
 
 .linkedin-post-saver-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #0a66c2;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
   border-radius: 50%;
   animation: linkedin-post-saver-spin 1s linear infinite;
 }
@@ -66,20 +69,27 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Notification styles */
+/* Spotify-style notification styles */
 .linkedin-post-saver-notification {
   position: fixed;
   top: 20px;
   right: 20px;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 600;
   z-index: 10000;
   opacity: 0;
   transform: translateX(100%);
-  transition: all 0.3s ease;
-  max-width: 300px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 350px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.05em;
 }
 
 .linkedin-post-saver-notification.show {
@@ -88,18 +98,18 @@
 }
 
 .linkedin-post-saver-notification.success {
-  background: #10b981;
-  color: white;
+  color: #1db954;
+  border-color: rgba(29, 185, 84, 0.5);
 }
 
 .linkedin-post-saver-notification.error {
-  background: #ef4444;
-  color: white;
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .linkedin-post-saver-notification.info {
-  background: #3b82f6;
-  color: white;
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Make sure our buttons don't interfere with LinkedIn's layout */
@@ -116,7 +126,6 @@
   margin-right: 12px !important;
 }
 
-/* Ensure proper alignment in action bars */
 .linkedin-post-saver-container {
   display: inline-flex !important;
   align-items: center !important;
@@ -126,9 +135,9 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .linkedin-post-saver-btn {
-    padding: 6px 10px;
+    padding: 10px 20px;
     font-size: 12px;
-    gap: 4px;
+    gap: 6px;
   }
   
   .linkedin-post-saver-notification {

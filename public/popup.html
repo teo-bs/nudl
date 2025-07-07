@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkedIn Post Saver</title>
+    <title>Croi - LinkedIn Post Saver</title>
     <style>
         * {
             margin: 0;
@@ -15,122 +15,170 @@
         body {
             width: 380px;
             min-height: 500px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
+            font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #141414 100%);
+            color: white;
         }
 
         .header {
-            background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
-            color: white;
-            padding: 20px;
+            background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+            color: black;
+            padding: 24px;
             text-align: center;
+            box-shadow: 0 4px 20px rgba(29, 185, 84, 0.3);
         }
 
         .header h1 {
-            font-size: 18px;
-            margin-bottom: 4px;
+            font-size: 20px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
         }
 
         .header p {
-            font-size: 12px;
-            opacity: 0.9;
+            font-size: 13px;
+            opacity: 0.8;
+            font-weight: 500;
         }
 
         .content {
-            padding: 20px;
+            padding: 24px;
         }
 
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .stat-card {
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(29, 185, 84, 0.3);
+            transform: translateY(-2px);
         }
 
         .stat-number {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            color: #0a66c2;
-            margin-bottom: 4px;
+            color: #1db954;
+            margin-bottom: 6px;
+            text-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
         }
 
         .stat-label {
             font-size: 12px;
-            color: #64748b;
+            color: #a3a3a3;
+            font-weight: 500;
+            letter-spacing: 0.05em;
         }
 
         .actions {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
 
         .btn {
-            background: #0a66c2;
-            color: white;
+            background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+            color: black;
             border: none;
-            padding: 12px 16px;
-            border-radius: 6px;
+            padding: 14px 20px;
+            border-radius: 50px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             text-align: center;
             display: block;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            box-shadow: 
+                0 4px 20px rgba(29, 185, 84, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .btn:hover {
-            background: #004182;
+            transform: scale(1.05);
+            box-shadow: 
+                0 8px 30px rgba(29, 185, 84, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .btn-secondary {
-            background: white;
-            color: #0a66c2;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
 
         .btn-secondary:hover {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(29, 185, 84, 0.4);
+            transform: translateY(-2px);
         }
 
         .recent-posts {
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .recent-posts h3 {
-            font-size: 14px;
-            margin-bottom: 12px;
-            color: #1e293b;
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.05em;
         }
 
         .post-item {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .post-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(29, 185, 84, 0.2);
+            transform: translateY(-2px);
         }
 
         .post-author {
-            font-size: 12px;
-            font-weight: 500;
-            color: #0a66c2;
-            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1db954;
+            margin-bottom: 6px;
         }
 
         .post-content {
             font-size: 12px;
-            color: #64748b;
-            line-height: 1.4;
+            color: #a3a3a3;
+            line-height: 1.5;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -139,8 +187,9 @@
 
         .post-date {
             font-size: 10px;
-            color: #94a3b8;
-            margin-top: 6px;
+            color: #64748b;
+            margin-top: 8px;
+            letter-spacing: 0.05em;
         }
 
         .empty-state {
@@ -160,45 +209,57 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: white;
-            padding: 12px 16px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toggle-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(29, 185, 84, 0.3);
         }
 
         .toggle-label {
             font-size: 14px;
-            color: #1e293b;
+            color: white;
+            font-weight: 500;
+            letter-spacing: 0.05em;
         }
 
         .toggle {
             position: relative;
-            width: 44px;
-            height: 24px;
-            background: #cbd5e1;
-            border-radius: 12px;
+            width: 48px;
+            height: 26px;
+            background: #64748b;
+            border-radius: 13px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .toggle.active {
-            background: #0a66c2;
+            background: #1db954;
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
         }
 
         .toggle-thumb {
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             background: white;
             border-radius: 50%;
-            transition: transform 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .toggle.active .toggle-thumb {
-            transform: translateX(20px);
+            transform: translateX(22px);
         }
 
         .loading {
@@ -209,10 +270,10 @@
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #0a66c2;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(29, 185, 84, 0.3);
+            border-top: 2px solid #1db954;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -223,17 +284,25 @@
         }
 
         .user-section {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-info:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(29, 185, 84, 0.3);
         }
 
         .user-info.logged-out {
@@ -241,20 +310,22 @@
         }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: #0a66c2;
-            color: white;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+            color: black;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 500;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 20px rgba(29, 185, 84, 0.3);
         }
 
         .user-info.logged-out .user-avatar {
-            background: #94a3b8;
+            background: #64748b;
+            color: white;
         }
 
         .user-details {
@@ -263,24 +334,28 @@
 
         .user-name {
             font-size: 14px;
-            font-weight: 500;
-            color: #1e293b;
+            font-weight: 600;
+            color: white;
             line-height: 1.2;
+            margin-bottom: 2px;
         }
 
         .user-email {
             font-size: 12px;
-            color: #64748b;
+            color: #a3a3a3;
             line-height: 1.2;
         }
 
         .user-status {
             font-size: 8px;
             line-height: 1;
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
         }
 
         .user-status.online {
-            color: #10b981;
+            color: #1db954;
         }
 
         .user-status.offline {
@@ -288,18 +363,22 @@
         }
 
         .login-btn, .refresh-btn {
-            background: #0a66c2;
-            color: white;
+            background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+            color: black;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
             margin-left: auto;
+            letter-spacing: 0.05em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .login-btn:hover, .refresh-btn:hover {
-            background: #004182;
+            transform: scale(1.05);
+            filter: brightness(1.1);
         }
 
         .user-info.login-in-progress {
@@ -308,13 +387,32 @@
 
         .user-info.login-in-progress .user-avatar {
             background: #f59e0b;
+            color: black;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1f1f1f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1db954;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1aa34a;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>LinkedIn Post Saver</h1>
-        <p>Save and organize your favorite posts</p>
+        <h1>Croi</h1>
+        <p>Save and organize your favorite LinkedIn posts</p>
     </div>
 
     <div class="content">

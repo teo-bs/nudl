@@ -1,5 +1,5 @@
 
-// Button Manager Class
+// Button Manager Class - Spotify Branded
 class ButtonManager {
   constructor() {
     this.storageManager = new window.StorageManager();
