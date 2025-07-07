@@ -1,7 +1,7 @@
 
 import { PostDetector } from './detector/detector';
 import { ButtonManager } from './button-manager';
-import { StorageManager } from './storage-manager';
+import { StorageManager as CroiStorageManager } from './storage-manager';
 import { NotificationManager } from './notification-manager';
 import { PostExtractor } from './post-extractor';
 import './content-styles.css';
@@ -11,7 +11,7 @@ declare global {
   interface Window {
     PostDetector: typeof PostDetector;
     ButtonManager: typeof ButtonManager;
-    StorageManager: typeof StorageManager;
+    CroiStorageManager: typeof CroiStorageManager;
     NotificationManager: typeof NotificationManager;
     PostExtractor: typeof PostExtractor;
     croiExtension: any;
@@ -20,7 +20,7 @@ declare global {
 
 window.PostDetector = PostDetector;
 window.ButtonManager = ButtonManager;
-window.StorageManager = StorageManager;
+window.CroiStorageManager = CroiStorageManager;
 window.NotificationManager = NotificationManager;
 window.PostExtractor = PostExtractor;
 
@@ -90,7 +90,7 @@ class ExtensionInitializer {
       
       try {
         if (request.action === 'getSavedPosts') {
-          const storageManager = new StorageManager();
+          const storageManager = new CroiStorageManager();
           const posts = await storageManager.getSavedPosts();
           sendResponse({ posts });
         }
@@ -99,7 +99,7 @@ class ExtensionInitializer {
           const buttons = document.querySelectorAll('.croi-save-btn');
           console.log('Croi Extension: Found', buttons.length, 'buttons to toggle');
           
-          const isActive = buttons.length > 0 && buttons[0].style.display !== 'none';
+          const isActive = buttons.length > 0 && (buttons[0] as HTMLElement).style.display !== 'none';
           const newState = !isActive;
           
           buttons.forEach(btn => {
@@ -111,7 +111,7 @@ class ExtensionInitializer {
         
         if (request.action === 'getExtensionStatus') {
           const buttons = document.querySelectorAll('.croi-save-btn');
-          const isActive = buttons.length > 0 && buttons[0].style.display !== 'none';
+          const isActive = buttons.length > 0 && (buttons[0] as HTMLElement).style.display !== 'none';
           sendResponse({ active: isActive, buttonsCount: buttons.length });
         }
         
@@ -151,7 +151,7 @@ window.croiExtension = {
       classes: {
         PostDetector: !!window.PostDetector,
         ButtonManager: !!window.ButtonManager,
-        StorageManager: !!window.StorageManager,
+        CroiStorageManager: !!window.CroiStorageManager,
         NotificationManager: !!window.NotificationManager,
         PostExtractor: !!window.PostExtractor
       }
