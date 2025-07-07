@@ -1,6 +1,7 @@
+
 import { useEffect, useRef, useState } from 'react';
 
-export const useScrollAnimation = () => {
+export const useScrollAnimation = (threshold = 0.1) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -9,13 +10,9 @@ export const useScrollAnimation = () => {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(entry.target);
         }
       },
-      {
-        threshold: 0.1,
-        rootMargin: '0px 0px -10% 0px'
-      }
+      { threshold }
     );
 
     if (ref.current) {
@@ -27,22 +24,24 @@ export const useScrollAnimation = () => {
         observer.unobserve(ref.current);
       }
     };
-  }, []);
+  }, [threshold]);
 
   return { ref, isVisible };
 };
 
 export const useStickyBar = () => {
-  const [showBar, setShowBar] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowBar(window.scrollY > 600);
+      const scrolled = window.scrollY;
+      const threshold = window.innerHeight * 0.5; // Show after scrolling 50% of viewport
+      setIsVisible(scrolled > threshold);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  return showBar;
+  return { isVisible };
 };

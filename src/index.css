@@ -101,6 +101,18 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* Scroll animation classes */
+  .scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .scroll-animate.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   /* Spotify glassmorphism utility classes */
   .glass {
     backdrop-filter: blur(20px);
