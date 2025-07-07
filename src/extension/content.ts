@@ -1,291 +1,162 @@
 
-/// <reference types="chrome"/>
 import { PostDetector } from './detector/detector';
+import { ButtonManager } from './button-manager';
 import { StorageManager } from './storage-manager';
 import { NotificationManager } from './notification-manager';
-import { SessionBridge } from './utils/session-bridge';
-import { waitForCondition } from './utils/polling';
-import type { ExtensionMessage, ExtensionResponse } from './types';
+import { PostExtractor } from './post-extractor';
+import './content-styles.css';
 
-// Global state
-let postDetector: PostDetector | null = null;
-let isInitialized = false;
+// Make classes globally available for backward compatibility
+declare global {
+  interface Window {
+    PostDetector: typeof PostDetector;
+    ButtonManager: typeof ButtonManager;
+    StorageManager: typeof StorageManager;
+    NotificationManager: typeof NotificationManager;
+    PostExtractor: typeof PostExtractor;
+    croiExtension: any;
+  }
+}
 
-// Inject styles for the extension
-function injectStyles() {
-  if (document.getElementById('croi-styles')) return;
-  
-  const style = document.createElement('style');
-  style.id = 'croi-styles';
-  
-  // Enhanced styles for the extension
-  style.textContent = `
-    .croi-btn {
-      display: inline-flex !important;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 12px;
-      background: #0A66C2 !important;
-      color: white !important;
-      border: none !important;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-right: 8px;
-      z-index: 1000;
-      position: relative;
-      min-width: 60px;
-      justify-content: center;
+window.PostDetector = PostDetector;
+window.ButtonManager = ButtonManager;
+window.StorageManager = StorageManager;
+window.NotificationManager = NotificationManager;
+window.PostExtractor = PostExtractor;
+
+console.log('Croi Extension: Starting unified content script...');
+
+class ExtensionInitializer {
+  private postDetector: PostDetector | null = null;
+  private retryCount = 0;
+  private maxRetries = 3;
+
+  constructor() {
+    this.init();
+  }
+
+  async init() {
+    try {
+      console.log('Croi Extension: Initializing extension...');
+      
+      // Wait for page to be ready
+      if (document.readyState === 'loading') {
+        console.log('Croi Extension: Waiting for DOM to load...');
+        document.addEventListener('DOMContentLoaded', () => this.initializeExtension());
+      } else {
+        console.log('Croi Extension: DOM already loaded, initializing...');
+        this.initializeExtension();
+      }
+      
+    } catch (error) {
+      console.error('Croi Extension: Failed to initialize extension:', error);
+      this.handleInitializationError();
     }
-    
-    .croi-btn:hover:not(:disabled) {
-      background: #084d96 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  private handleInitializationError() {
+    if (this.retryCount < this.maxRetries) {
+      this.retryCount++;
+      console.log(`Croi Extension: Retrying initialization (${this.retryCount}/${this.maxRetries})...`);
+      setTimeout(() => this.init(), 2000 * this.retryCount);
+    } else {
+      console.error('Croi Extension: Max retries reached. Extension initialization failed.');
     }
-    
-    .croi-btn:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
+  }
+
+  private initializeExtension() {
+    try {
+      console.log('Croi Extension: Starting post detection...');
+      
+      // Create and initialize PostDetector
+      this.postDetector = new PostDetector();
+      this.postDetector.initialize();
+      
+      console.log('Croi Extension: Extension initialized successfully');
+      
+      // Setup message listener
+      this.setupMessageListener();
+      
+    } catch (error) {
+      console.error('Croi Extension: PostDetector initialization error:', error);
+      this.handleInitializationError();
     }
-    
-    .croi-btn.saved {
-      background: #057642 !important;
-    }
-    
-    .croi-btn.error {
-      background: #d92d20 !important;
-    }
-    
-    .croi-btn-container {
-      display: inline-flex;
-      align-items: center;
-      margin-right: 8px;
-    }
-    
-    .croi-spinner {
-      width: 12px;
-      height: 12px;
-      border: 2px solid transparent;
-      border-top: 2px solid currentColor;
-      border-radius: 50%;
-      animation: croi-spin 1s linear infinite;
-    }
-    
-    @keyframes croi-spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .croi-notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 16px;
-      border-radius: 6px;
-      color: white;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 10000;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      max-width: 300px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .croi-notification.show {
-      transform: translateX(0);
-    }
-    
-    .croi-notification.success {
-      background: #057642;
-    }
-    
-    .croi-notification.error {
-      background: #d92d20;
-    }
-    
-    .croi-notification.info {
-      background: #0A66C2;
-    }
-    
-    /* Ensure button is visible in LinkedIn's feed */
-    .feed-shared-social-action-bar .croi-btn-container {
-      display: inline-flex !important;
-    }
-  `;
-  
-  document.head.appendChild(style);
+  }
+
+  private setupMessageListener() {
+    // Listen for messages from popup
+    chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+      console.log('Croi Extension: Received message:', request);
+      
+      try {
+        if (request.action === 'getSavedPosts') {
+          const storageManager = new StorageManager();
+          const posts = await storageManager.getSavedPosts();
+          sendResponse({ posts });
+        }
+        
+        if (request.action === 'toggleExtension') {
+          const buttons = document.querySelectorAll('.croi-save-btn');
+          console.log('Croi Extension: Found', buttons.length, 'buttons to toggle');
+          
+          const isActive = buttons.length > 0 && buttons[0].style.display !== 'none';
+          const newState = !isActive;
+          
+          buttons.forEach(btn => {
+            (btn as HTMLElement).style.display = newState ? 'flex' : 'none';
+          });
+          
+          sendResponse({ active: newState });
+        }
+        
+        if (request.action === 'getExtensionStatus') {
+          const buttons = document.querySelectorAll('.croi-save-btn');
+          const isActive = buttons.length > 0 && buttons[0].style.display !== 'none';
+          sendResponse({ active: isActive, buttonsCount: buttons.length });
+        }
+        
+      } catch (error) {
+        console.error('Croi Extension: Message handling error:', error);
+        sendResponse({ error: error.message });
+      }
+      
+      return true; // Keep message channel open for async responses
+    });
+  }
 }
 
 // Initialize the extension
-async function initialize() {
-  if (isInitialized) {
-    console.log('Croi Extension: Already initialized');
-    return;
-  }
+const extensionInitializer = new ExtensionInitializer();
 
-  try {
-    console.log('Croi Extension: Starting initialization...');
-    
-    // Inject styles first
-    injectStyles();
-    
-    // Wait for page to be ready
-    if (document.readyState === 'loading') {
-      await new Promise(resolve => {
-        document.addEventListener('DOMContentLoaded', resolve);
-      });
-    }
-    
-    // Additional wait for LinkedIn's dynamic content
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Check if we're on LinkedIn
-    if (!window.location.href.includes('linkedin.com')) {
-      console.log('Croi Extension: Not on LinkedIn, skipping initialization');
-      return;
-    }
-    
-    // Wait for LinkedIn to load
-    const linkedinReady = await waitForCondition(
-      () => document.querySelector('.feed-shared-update-v2') !== null,
-      10000
-    );
-    
-    if (!linkedinReady) {
-      console.log('Croi Extension: LinkedIn content not ready, retrying...');
-      setTimeout(() => {
-        isInitialized = false;
-        initialize();
-      }, 3000);
-      return;
-    }
-    
-    // Initialize post detector
-    postDetector = new PostDetector();
-    postDetector.initialize();
-    
-    // Sync session with web app
-    await SessionBridge.syncWithWebApp();
-    
-    isInitialized = true;
-    console.log('Croi Extension: Successfully initialized');
-    
-    // Show success notification
-    const notificationManager = new NotificationManager();
-    notificationManager.show('Croi extension loaded! 🚀', 'success');
-    
-  } catch (error) {
-    console.error('Croi Extension: Initialization failed:', error);
-    
-    // Retry after delay
-    setTimeout(() => {
-      console.log('Croi Extension: Retrying initialization...');
-      isInitialized = false;
-      initialize();
-    }, 5000);
-  }
-}
-
-// Handle messages from popup and background
-chrome.runtime.onMessage.addListener(async (request: ExtensionMessage, sender, sendResponse) => {
-  console.log('Croi Extension: Received message:', request);
+// Add manual controls for debugging
+window.croiExtension = {
+  reinitialize: () => new ExtensionInitializer(),
   
-  try {
-    if (request.action === 'getSavedPosts') {
-      const storageManager = new StorageManager();
-      const posts = await storageManager.getSavedPosts();
-      sendResponse({ success: true, posts } as ExtensionResponse);
-      return true;
-    }
-    
-    if (request.action === 'getSession') {
-      const session = await SessionBridge.getSession();
-      sendResponse({ success: true, session });
-      return true;
-    }
-    
-    if (request.action === 'toggleExtension') {
-      const isActive = document.querySelectorAll('.croi-btn').length > 0;
-      
-      if (isActive) {
-        // Hide buttons - cast to HTMLElement to access style property
-        document.querySelectorAll('.croi-btn').forEach(btn => {
-          (btn as HTMLElement).style.display = 'none';
-        });
-        sendResponse({ success: true, active: false } as ExtensionResponse);
-      } else {
-        // Show buttons or reinitialize - cast to HTMLElement to access style property
-        const hiddenButtons = document.querySelectorAll('.croi-btn[style*="display: none"]');
-        if (hiddenButtons.length > 0) {
-          hiddenButtons.forEach(btn => {
-            (btn as HTMLElement).style.display = 'inline-flex';
-          });
-        } else if (postDetector) {
-          // Reinitialize if no buttons found
-          postDetector.initialize();
-        }
-        sendResponse({ success: true, active: true } as ExtensionResponse);
-      }
-      return true;
-    }
-    
-    if (request.action === 'reinitialize') {
-      isInitialized = false;
-      await initialize();
-      sendResponse({ success: true } as ExtensionResponse);
-      return true;
-    }
-    
-  } catch (error) {
-    console.error('Croi Extension: Message handler error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    sendResponse({ success: false, error: errorMessage } as ExtensionResponse);
-  }
-});
-
-// Global debugging helpers
-(window as any).croiExtension = {
-  reinitialize: () => {
-    isInitialized = false;
-    initialize();
-  },
-  getStatus: () => ({
-    initialized: isInitialized,
-    buttonsCount: document.querySelectorAll('.croi-btn').length,
-    postsFound: document.querySelectorAll([
+  checkPosts: () => {
+    const posts = document.querySelectorAll([
       'div[data-id*="urn:li:activity:"]',
       'div[data-urn*="urn:li:activity:"]',
-      '.feed-shared-update-v2'
-    ].join(', ')).length
-  }),
-  testSave: () => {
-    const firstPost = document.querySelector('.feed-shared-update-v2');
-    if (firstPost) {
-      const button = firstPost.querySelector('.croi-btn') as HTMLButtonElement;
-      if (button) button.click();
-    }
+      '.feed-shared-update-v2',
+      'article[data-urn]'
+    ].join(', '));
+    console.log('Manual check found', posts.length, 'posts');
+    return posts;
+  },
+  
+  getStatus: () => {
+    const buttons = document.querySelectorAll('.croi-save-btn');
+    return {
+      initialized: !!extensionInitializer,
+      buttonsCount: buttons.length,
+      classes: {
+        PostDetector: !!window.PostDetector,
+        ButtonManager: !!window.ButtonManager,
+        StorageManager: !!window.StorageManager,
+        NotificationManager: !!window.NotificationManager,
+        PostExtractor: !!window.PostExtractor
+      }
+    };
   }
 };
 
-// Start initialization
-console.log('Croi Extension: Content script loaded');
-initialize();
-
-// Handle page navigation (LinkedIn is SPA)
-let currentUrl = window.location.href;
-setInterval(() => {
-  if (currentUrl !== window.location.href) {
-    currentUrl = window.location.href;
-    console.log('Croi Extension: URL changed, reinitializing...');
-    
-    // Delay reinitalization to allow new content to load
-    setTimeout(() => {
-      if (postDetector && window.location.href.includes('linkedin.com/feed')) {
-        postDetector.initialize();
-      }
-    }, 2000);
-  }
-}, 1000);
+console.log('Croi Extension: Content script loaded. Debug tools available via window.croiExtension');
