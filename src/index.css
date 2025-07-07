@@ -1,113 +1,89 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Spotify-inspired design system. All colors, gradients, fonts, etc defined here. 
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Granola glassmorphism color palette */
-    --background: 60 22% 99%; /* #FDFDFB */
-    --foreground: 0 0% 7%; /* #111111 */
+    /* Spotify dark theme color palette */
+    --background: 0 0% 6%; /* #0f0f0f - Deep black */
+    --foreground: 0 0% 100%; /* #ffffff - Pure white */
 
-    --card: 60 22% 99%;
-    --card-foreground: 0 0% 7%;
+    --card: 0 0% 8%; /* #141414 - Dark card background */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 60 22% 99%;
-    --popover-foreground: 0 0% 7%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Granola accent colors */
-    --primary: 14 100% 67%; /* #FF7A59 */
-    --primary-foreground: 0 0% 100%;
+    /* Spotify green accent */
+    --primary: 141 76% 48%; /* #1db954 - Spotify green */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 20 100% 96%; /* #FFF4EE */
-    --secondary-foreground: 0 0% 7%;
+    --secondary: 0 0% 15%; /* #262626 - Dark secondary */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 20 100% 96%;
-    --muted-foreground: 216 12% 32%; /* #4B5563 */
+    --muted: 0 0% 12%; /* #1f1f1f - Muted background */
+    --muted-foreground: 0 0% 64%; /* #a3a3a3 - Muted text */
 
-    --accent: 14 100% 67%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 141 76% 48%; /* Spotify green */
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 14 100% 67%;
+    --border: 0 0% 20%; /* #333333 - Border color */
+    --input: 0 0% 15%; /* #262626 - Input background */
+    --ring: 141 76% 48%; /* Spotify green focus ring */
 
-    --radius: 1rem;
+    --radius: 0.5rem;
 
-    /* Granola brand colors */
-    --accent-main: 14 100% 67%; /* #FF7A59 */
-    --accent-light: 20 100% 96%; /* #FFF4EE */
-    --text-head: 0 0% 7%; /* #111111 */
-    --text-body: 216 12% 32%; /* #4B5563 */
+    /* Spotify brand colors */
+    --spotify-green: 141 76% 48%; /* #1db954 */
+    --spotify-dark: 0 0% 6%; /* #0f0f0f */
+    --spotify-grey: 0 0% 12%; /* #1f1f1f */
+    --spotify-light-grey: 0 0% 64%; /* #a3a3a3 */
 
     /* Enhanced glassmorphism effects */
-    --glass-bg: 255 255 255 / 0.1;
+    --glass-bg: 255 255 255 / 0.05;
     --glass-border: 255 255 255 / 0.1;
+    --glass-dark-bg: 0 0 0 / 0.3;
 
     /* Sidebar colors */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 220 9% 46%;
-    --sidebar-primary: 207 95% 64%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 207 47% 95%;
-    --sidebar-accent-foreground: 220 9% 13%;
-    --sidebar-border: 214 31% 91%;
-    --sidebar-ring: 207 95% 64%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 64%;
+    --sidebar-primary: 141 76% 48%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 141 76% 48%;
   }
 
-  .dark {
-    --background: 220 9% 6%;
-    --foreground: 0 0% 98%;
-
-    --card: 220 9% 6%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 220 9% 6%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 14 100% 67%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 9% 15%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 220 9% 15%;
-    --muted-foreground: 220 5% 65%;
-
-    --accent: 220 9% 15%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 220 9% 15%;
-    --input: 220 9% 15%;
-    --ring: 14 100% 67%;
-    
-    /* Dark mode Granola colors */
-    --accent-main: 14 100% 67%;
-    --accent-light: 220 9% 15%;
-    --text-head: 0 0% 98%;
-    --text-body: 220 5% 65%;
-
-    /* Dark glassmorphism */
-    --glass-bg: 0 0% 0% / 0.1;
-    --glass-border: 0 0% 100% / 0.1;
-    
-    --sidebar-background: 220 9% 8%;
-    --sidebar-foreground: 220 5% 65%;
-    --sidebar-primary: 207 95% 64%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 9% 15%;
-    --sidebar-accent-foreground: 220 5% 65%;
-    --sidebar-border: 220 9% 15%;
-    --sidebar-ring: 207 95% 64%;
+  .light {
+    /* Light mode - keeping dark theme for Spotify aesthetic */
+    --background: 0 0% 6%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 141 76% 48%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 141 76% 48%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 141 76% 48%;
   }
 }
 
@@ -118,85 +94,169 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(0 0% 8%) 100%);
+    min-height: 100vh;
   }
 }
 
 @layer components {
-  /* Granola glassmorphism utility classes */
+  /* Spotify glassmorphism utility classes */
   .glass {
-    backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
-  
-  .glass-card {
-    backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
-
-  /* Granola button styles */
-  .btn-primary {
-    background: hsl(var(--accent-main));
-    color: white;
-    border-radius: 9999px;
-    padding: 0.75rem 2rem;
-    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  .btn-primary:hover {
+  .glass:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(29, 185, 84, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(29, 185, 84, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  
+  .glass-card {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 
+      0 16px 64px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(29, 185, 84, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 
+      0 24px 80px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(29, 185, 84, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  /* Spotify button styles */
+  .btn-spotify {
+    background: linear-gradient(135deg, hsl(var(--spotify-green)) 0%, hsl(141 76% 42%) 100%);
+    color: black;
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+      0 4px 20px rgba(29, 185, 84, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  
+  .btn-spotify:hover {
     transform: scale(1.05);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 2px hsl(var(--accent-main) / 0.3);
+    box-shadow: 
+      0 8px 30px rgba(29, 185, 84, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    filter: brightness(1.1);
   }
   
-  .btn-primary:active {
-    transform: scale(0.95);
-    transition-duration: 120ms;
+  .btn-spotify:active {
+    transform: scale(0.98);
+    transition-duration: 0.1s;
   }
 
-  /* Scroll animations */
-  .scroll-animate {
-    opacity: 0;
-    transform: translateY(1.5rem);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .scroll-animate.in-view {
-    opacity: 1;
-    transform: translateY(0);
+  .btn-glass {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    padding: 12px 24px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
-  /* Staggered animation delays */
-  .animate-delay-100 { animation-delay: 0.1s; }
-  .animate-delay-200 { animation-delay: 0.2s; }
-  .animate-delay-300 { animation-delay: 0.3s; }
-  .animate-delay-400 { animation-delay: 0.4s; }
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(29, 185, 84, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(29, 185, 84, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Spotify-style animations */
+  .spotify-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .spotify-glow::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(29, 185, 84, 0.1), transparent);
+    animation: spotify-shine 2s infinite;
+    pointer-events: none;
+  }
+
+  @keyframes spotify-shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  }
 
   /* Gradient backgrounds */
-  .gradient-hero {
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--accent-light)) 100%);
+  .gradient-spotify {
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      hsl(0 0% 8%) 50%,
+      hsl(var(--spotify-grey)) 100%);
   }
   
-  .gradient-section {
-    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--accent-light) / 0.3) 100%);
+  .gradient-spotify-green {
+    background: linear-gradient(135deg, 
+      hsl(var(--spotify-green)) 0%, 
+      hsl(141 76% 42%) 50%,
+      hsl(141 76% 38%) 100%);
   }
 
-  /* Sticky install bar */
+  /* Text effects */
+  .text-spotify-glow {
+    text-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
+  }
+
+  /* Sticky install bar with Spotify styling */
   .sticky-install-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 50;
-    backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.9);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 1px solid rgba(29, 185, 84, 0.2);
     padding: 1rem;
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -204,5 +264,23 @@ All colors MUST be HSL.
   
   .sticky-install-bar.show {
     transform: translateY(0);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--spotify-grey));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--spotify-green));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(141 76% 52%);
   }
 }

@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -18,16 +19,16 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        coral: "bg-[hsl(var(--accent-main))] text-white hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-[hsl(var(--accent-main))]/30 active:scale-95 transition-all duration-300 rounded-full font-semibold",
-        "coral-outline": "border-2 border-[hsl(var(--accent-main))] text-[hsl(var(--accent-main))] hover:bg-[hsl(var(--accent-main))] hover:text-white hover:scale-105 rounded-full",
-        glass: "glass text-foreground hover:bg-white/20 border-white/30",
-        glow: "bg-primary text-primary-foreground hover:bg-primary/90 glow-primary transition-all duration-300",
+        spotify: "btn-spotify",
+        glass: "btn-glass",
+        "spotify-outline": "border-2 border-[hsl(var(--spotify-green))] text-[hsl(var(--spotify-green))] hover:bg-[hsl(var(--spotify-green))] hover:text-black hover:scale-105 rounded-full font-bold transition-all duration-300",
+        glow: "bg-primary text-primary-foreground hover:bg-primary/90 spotify-glow transition-all duration-300",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
-        xl: "h-14 rounded-xl px-12 text-lg font-semibold",
+        xl: "h-14 rounded-full px-12 text-lg font-bold",
         icon: "h-10 w-10",
       },
     },
